@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRM Super Admin — Full Reference</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f9fc;
+      --card: #ffffff;
+      --border: #e8eaf0;
+      --text: #1a1d27;
+      --muted: #6b7280;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --sidebar-w: 260px;
+      --radius: 12px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    /* ── Sidebar ── */
+    nav#sidebar {
+      width: var(--sidebar-w);
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 24px 0 32px;
+      z-index: 100;
+    }
+    nav#sidebar .logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    nav#sidebar .logo .icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 16px; flex-shrink: 0;
+    }
+    nav#sidebar .logo span { font-weight: 800; font-size: 15px; }
+    nav#sidebar .section-title {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--muted);
+      padding: 12px 20px 6px;
+    }
+    nav#sidebar a {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 20px; font-size: 13px; font-weight: 500;
+      color: var(--muted); text-decoration: none; border-radius: 0;
+      transition: background .15s, color .15s;
+    }
+    nav#sidebar a:hover { background: #f3f4f6; color: var(--text); }
+    nav#sidebar a .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border); flex-shrink: 0;
+    }
+    nav#sidebar a:hover .dot { background: var(--accent); }
+
+    /* ── Main ── */
+    main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      padding: 48px 52px;
+      max-width: calc(100% - var(--sidebar-w));
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: 28px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 6px; }
+    h2 { font-size: 20px; font-weight: 700; margin: 48px 0 4px; padding-top: 48px;
+         border-top: 1px solid var(--border); letter-spacing: -.3px; }
+    h2:first-of-type { border-top: none; margin-top: 32px; }
+    h3 { font-size: 15px; font-weight: 700; margin: 28px 0 10px; color: var(--text); }
+    h4 { font-size: 13px; font-weight: 700; margin: 18px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    p { color: #374151; margin-bottom: 10px; }
+    strong { font-weight: 700; color: var(--text); }
+
+    /* ── Intro block ── */
+    .intro {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border-radius: var(--radius);
+      color: white;
+      padding: 28px 32px;
+      margin-bottom: 36px;
+    }
+    .intro h1 { color: white; font-size: 24px; margin-bottom: 4px; }
+    .intro p { color: rgba(255,255,255,.8); margin: 0; font-size: 13px; }
+    .intro .meta {
+      display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;
+    }
+    .intro .meta-item {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .intro .meta-item .label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: rgba(255,255,255,.6);
+    }
+    .intro .meta-item .val {
+      font-size: 13px; font-weight: 600; color: white; font-family: var(--mono);
+    }
+
+    /* ── Method badges ── */
+    .method {
+      display: inline-flex; align-items: center;
+      font-size: 11px; font-weight: 800; font-family: var(--mono);
+      padding: 3px 9px; border-radius: 6px; letter-spacing: .04em;
+    }
+    .GET    { background: #dcfce7; color: #16a34a; }
+    .POST   { background: #dbeafe; color: #1d4ed8; }
+    .PATCH  { background: #fef3c7; color: #b45309; }
+    .PUT    { background: #fef3c7; color: #b45309; }
+    .DELETE { background: #fee2e2; color: #dc2626; }
+
+    /* ── Endpoint cards ── */
+    .endpoint-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .endpoint-header {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .endpoint-path {
+      font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text);
+      flex: 1;
+    }
+    .perm-badge {
+      font-size: 10px; font-weight: 700; font-family: var(--mono);
+      background: #ede9fe; color: #7c3aed; padding: 2px 8px; border-radius: 20px;
+    }
+    .endpoint-body { padding: 16px 20px; }
+    .endpoint-body p { margin-bottom: 8px; font-size: 13px; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 10px;
+      padding: 16px 18px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.7;
+      margin: 10px 0;
+    }
+    code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: #f0f0f8;
+      color: #5b21b6;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+
+    /* ── UI Section cards ── */
+    .ui-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 18px;
+    }
+    .ui-card h3 { margin-top: 0; }
+
+    /* ── Field table ── */
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px; margin: 12px 0;
+    }
+    th {
+      text-align: left; padding: 8px 12px;
+      background: #f8f9fc; border: 1px solid var(--border);
+      font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--muted); font-weight: 700;
+    }
+    td { padding: 9px 12px; border: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: #fcfcfe; }
+    td code { font-size: 11.5px; }
+
+    /* ── Callout boxes ── */
+    .note, .warn, .tip {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 16px; border-radius: 10px;
+      margin: 14px 0; font-size: 13px;
+    }
+    .note { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .tip  { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .note .icon, .warn .icon, .tip .icon { font-size: 16px; flex-shrink: 0; line-height: 1.4; }
+
+    /* ── Permission pills ── */
+    .perm-grid {
+      display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0;
+    }
+    .perm-pill {
+      font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px; border: 1px solid;
+    }
+    .perm-pill.user     { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .perm-pill.role     { background:#f5f3ff; color:#6d28d9; border-color:#ddd6fe; }
+    .perm-pill.perm     { background:#eef2ff; color:#4338ca; border-color:#c7d2fe; }
+    .perm-pill.team     { background:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
+    .perm-pill.attend   { background:#f0fdfa; color:#0f766e; border-color:#99f6e4; }
+    .perm-pill.location { background:#fff1f2; color:#be123c; border-color:#fecdd3; }
+    .perm-pill.device   { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }
+    .perm-pill.consent  { background:#f7fee7; color:#3f6212; border-color:#d9f99d; }
+    .perm-pill.lead     { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+    .perm-pill.inventory{ background:#ecfeff; color:#155e75; border-color:#a5f3fc; }
+    .perm-pill.system   { background:#f9fafb; color:#374151; border-color:#e5e7eb; }
+
+    /* ── Section label ── */
+    .section-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--accent);
+      background: #ede9fe; padding: 3px 10px; border-radius: 20px;
+      margin-bottom: 8px;
+    }
+
+    /* ── UI Flow steps ── */
+    .flow-steps { counter-reset: step; margin: 12px 0; }
+    .flow-steps li {
+      counter-increment: step;
+      list-style: none;
+      display: flex; gap: 14px; align-items: flex-start;
+      margin-bottom: 10px; font-size: 13px;
+    }
+    .flow-steps li::before {
+      content: counter(step);
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--accent); color: white;
+      font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* ── Nav link colors ── */
+    .nav-page { border-left: 3px solid transparent; padding-left: 17px !important; }
+    .nav-page:hover { border-left-color: var(--accent); }
+
+    /* ── Summary table ── */
+    .summary-num {
+      font-size: 11px; font-weight: 700; font-family: var(--mono);
+      color: var(--muted); width: 32px; text-align: right;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      nav#sidebar { display: none; }
+      main { margin-left: 0; max-width: 100%; padding: 24px 20px; }
+    }
+
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ SIDEBAR ═══════════════════════════════ -->
+<nav id="sidebar">
+  <div class="logo">
+    <div class="icon">⚡</div>
+    <span>CRM Super Admin</span>
+  </div>
+
+  <div class="section-title">Overview</div>
+  <a href="#overview" class="nav-page"><span class="dot"></span>Introduction</a>
+  <a href="#architecture" class="nav-page"><span class="dot"></span>App Architecture</a>
+  <a href="#auth-flow" class="nav-page"><span class="dot"></span>Auth Flow</a>
+  <a href="#sidebar-nav" class="nav-page"><span class="dot"></span>Sidebar Navigation</a>
+
+  <div class="section-title">Pages & UI</div>
+  <a href="#dashboard" class="nav-page"><span class="dot"></span>Dashboard</a>
+  <a href="#employees" class="nav-page"><span class="dot"></span>Employees</a>
+  <a href="#add-employee" class="nav-page"><span class="dot"></span>↳ Add Employee Modal</a>
+  <a href="#roles" class="nav-page"><span class="dot"></span>Roles</a>
+  <a href="#add-role" class="nav-page"><span class="dot"></span>↳ Add Role Modal</a>
+  <a href="#manage-permissions" class="nav-page"><span class="dot"></span>↳ Manage Permissions Modal</a>
+  <a href="#teams" class="nav-page"><span class="dot"></span>Teams</a>
+  <a href="#create-team" class="nav-page"><span class="dot"></span>↳ Create Team Modal</a>
+  <a href="#edit-team" class="nav-page"><span class="dot"></span>↳ Edit Team Modal</a>
+  <a href="#delete-team" class="nav-page"><span class="dot"></span>↳ Delete Team Confirm</a>
+  <a href="#manage-members" class="nav-page"><span class="dot"></span>↳ Manage Members Modal</a>
+  <a href="#managers" class="nav-page"><span class="dot"></span>Managers</a>
+  <a href="#assign-teams" class="nav-page"><span class="dot"></span>↳ Assign Teams Modal</a>
+
+  <div class="section-title">API Endpoints</div>
+  <a href="#api-auth" class="nav-page"><span class="dot"></span>Auth</a>
+  <a href="#api-users" class="nav-page"><span class="dot"></span>Users</a>
+  <a href="#api-roles" class="nav-page"><span class="dot"></span>Roles (RBAC)</a>
+  <a href="#api-permissions" class="nav-page"><span class="dot"></span>Permissions (RBAC)</a>
+  <a href="#api-teams" class="nav-page"><span class="dot"></span>Teams</a>
+
+  <div class="section-title">Reference</div>
+  <a href="#all-permissions" class="nav-page"><span class="dot"></span>All 45 Permissions</a>
+  <a href="#error-codes" class="nav-page"><span class="dot"></span>Error Codes</a>
+  <a href="#all-endpoints" class="nav-page"><span class="dot"></span>All Endpoints Summary</a>
+</nav>
+
+<!-- ═══════════════════════════════ MAIN ═══════════════════════════════════ -->
+<main>
+
+  <!-- Intro -->
+  <div class="intro">
+    <h1>CRM Pro — Super Admin Reference</h1>
+    <p>Complete UI workflow documentation and API reference. Covers every page, modal, field, validation rule, and backend call needed to replicate this application.</p>
+    <div class="meta">
+      <div class="meta-item"><span class="label">Base URL</span><span class="val">/api</span></div>
+      <div class="meta-item"><span class="label">Auth</span><span class="val">Bearer &lt;accessToken&gt;</span></div>
+      <div class="meta-item"><span class="label">Format</span><span class="val">application/json</span></div>
+      <div class="meta-item"><span class="label">Stack</span><span class="val">React 19 · Vite 8 · Tailwind v4 · Axios</span></div>
+      <div class="meta-item"><span class="label">Generated</span><span class="val">Mar 2026</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ OVERVIEW ══════════════════════════════════════════════════════════ -->
+  <h2 id="overview">Introduction</h2>
+  <p>
+    The CRM Pro super admin panel is a single-page React application that gives the super admin complete control over
+    <strong>users, roles, permissions, teams, and manager assignments</strong>. The super admin is the highest-privilege
+    account — their RBAC role carries all 45 seeded permissions.
+  </p>
+  <div class="note">
+    <span class="icon">ℹ️</span>
+    <div>There is no separate Super Admin database model. The super admin is a <strong>regular User</strong> whose
+    assigned RBAC role (typically named <code>superadmin</code>) carries every permission. This role is created
+    automatically by the database seed script.</div>
+  </div>
+
+  <h3>What the Super Admin can do</h3>
+  <table>
+    <thead><tr><th>Domain</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Auth</strong></td><td>Login, view own profile, refresh token, logout</td></tr>
+      <tr><td><strong>Users / Employees</strong></td><td>Create users, list all users, view by ID, assign roles at creation</td></tr>
+      <tr><td><strong>Roles</strong></td><td>Create, read, update, delete RBAC roles</td></tr>
+      <tr><td><strong>Permissions</strong></td><td>Create, read, update, delete permissions; assign/remove from roles</td></tr>
+      <tr><td><strong>Teams</strong></td><td>Create, edit, delete teams; assign/remove members; set team lead</td></tr>
+      <tr><td><strong>Managers</strong></td><td>Assign one or more teams to any manager user</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ═══ ARCHITECTURE ══════════════════════════════════════════════════════ -->
+  <h2 id="architecture">App Architecture</h2>
+
+  <h3>Directory Structure</h3>
+  <pre>src/
+├── api/
+│   └── axios.js              ← Shared Axios instance (auto-auth + 401 handler)
+├── assets/
+├── components/
+│   ├── AddEmployeeModal.jsx  ← Create user modal
+│   ├── AddRoleModal.jsx      ← Create role modal
+│   ├── AssignTeamsModal.jsx  ← Assign teams to a manager modal
+│   ├── CreateTeamModal.jsx   ← Create team modal
+│   ├── ManageMembersModal.jsx← Add / remove team members modal
+│   ├── ManagePermissionsModal.jsx ← Toggle permissions per role modal
+│   └── Sidebar.jsx           ← Collapsible sidebar navigation
+├── context/
+│   └── AuthContext.jsx       ← Login / logout state, user in localStorage
+├── layouts/
+│   └── DashboardLayout.jsx   ← Sidebar + &lt;Outlet /&gt; wrapper
+└── pages/
+    ├── DashboardPage.jsx     ← Stats overview
+    ├── EmployeesPage.jsx     ← Employee list + search + add
+    ├── InventoryPage.jsx     ← Inventory projects
+    ├── LoginPage.jsx         ← Login form
+    ├── ManagersPage.jsx      ← Manager list + assign teams
+    ├── RolesPage.jsx         ← Role list + manage permissions
+    └── TeamsPage.jsx         ← Team list + CRUD + members</pre>
+
+  <h3>Axios Instance (<code>src/api/axios.js</code>)</h3>
+  <p>All API calls go through a single shared Axios instance configured at startup:</p>
+  <pre>const api = axios.create({
+  baseURL: import.meta.env.VITE_BASE_APP_URL,  // e.g. http://localhost:4000/api
+  headers: { 'Content-Type': 'application/json' },
+})
+
+// Request interceptor — attaches Bearer token from localStorage
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('accessToken')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+// Response interceptor — on 401, clears auth and redirects to /login
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('user')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)</pre>
+
+  <h3>Environment Variables</h3>
+  <table>
+    <thead><tr><th>Variable</th><th>Example Value</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>VITE_BASE_APP_URL</code></td><td><code>http://localhost:4000/api</code></td><td>Backend API base URL (Vite exposes VITE_ prefixed vars to the client)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Routing</h3>
+  <table>
+    <thead><tr><th>Path</th><th>Component</th><th>Guard</th></tr></thead>
+    <tbody>
+      <tr><td><code>/</code></td><td>Redirect → <code>/login</code></td><td>—</td></tr>
+      <tr><td><code>/login</code></td><td><code>LoginPage</code></td><td>PublicRoute (redirects to /dashboard if already logged in)</td></tr>
+      <tr><td><code>/dashboard</code></td><td><code>DashboardPage</code></td><td>ProtectedRoute</td></tr>
+      <tr><td><code>/employees</code></td><td><code>EmployeesPage</code></td><td>ProtectedRoute</td></tr>
+      <tr><td><code>/roles</code></td><td><code>RolesPage</code></td><td>ProtectedRoute</td></tr>
+      <tr><td><code>/teams</code></td><td><code>TeamsPage</code></td><td>ProtectedRoute</td></tr>
+      <tr><td><code>/managers</code></td><td><code>ManagersPage</code></td><td>ProtectedRoute</td></tr>
+      <tr><td><code>/inventory</code></td><td><code>InventoryPage</code></td><td>ProtectedRoute</td></tr>
+      <tr><td><code>*</code></td><td>Redirect → <code>/login</code></td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <span class="icon">ℹ️</span>
+    <div><strong>ProtectedRoute</strong> reads <code>isAuthenticated</code> from <code>AuthContext</code>. If false, it redirects to <code>/login</code>.
+    <strong>PublicRoute</strong> is the inverse — redirects to <code>/dashboard</code> if already authenticated.</div>
+  </div>
+
+  <!-- ═══ AUTH FLOW ═════════════════════════════════════════════════════════ -->
+  <h2 id="auth-flow">Auth Flow</h2>
+
+  <div class="ui-card">
+    <h3>Login</h3>
+    <ol class="flow-steps">
+      <li>User opens <code>/login</code>. A gradient split-screen form is shown (logo left, form right on desktop; stacked on mobile).</li>
+      <li>User enters <strong>Email</strong> (required, valid email) and <strong>Password</strong> (required, min 6 chars). A show/hide toggle is on the password field.</li>
+      <li>On submit → <code>POST /api/auth/login</code> with <code>{ email, password }</code>.</li>
+      <li>On success: <code>accessToken</code> and <code>user</code> object are saved to <code>localStorage</code>. User is redirected to <code>/dashboard</code>.</li>
+      <li>On error: an inline red error banner is shown below the form header.</li>
+    </ol>
+    <h4>Validation (client-side)</h4>
+    <table>
+      <thead><tr><th>Field</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr><td>email</td><td>Required, valid email format</td></tr>
+        <tr><td>password</td><td>Required</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ui-card">
+    <h3>Session Persistence</h3>
+    <p><code>AuthContext</code> initialises <code>user</code> and <code>isAuthenticated</code> from <code>localStorage</code> on every page load, so the session survives hard refreshes without calling the backend.</p>
+    <pre>// AuthContext init
+const storedUser = localStorage.getItem('user')
+const storedToken = localStorage.getItem('accessToken')
+// Both must exist for isAuthenticated = true</pre>
+  </div>
+
+  <div class="ui-card">
+    <h3>Logout</h3>
+    <ol class="flow-steps">
+      <li>User clicks the logout icon in the bottom of the Sidebar.</li>
+      <li><code>logout()</code> from <code>AuthContext</code> clears <code>accessToken</code> and <code>user</code> from <code>localStorage</code>.</li>
+      <li>User is programmatically redirected to <code>/login</code> via React Router's <code>useNavigate</code>.</li>
+    </ol>
+    <div class="note">
+      <span class="icon">ℹ️</span>
+      <div>The frontend does not currently call <code>POST /api/auth/logout</code> — it only clears local storage. Add this call if you need server-side refresh token invalidation.</div>
+    </div>
+  </div>
+
+  <!-- ═══ SIDEBAR NAV ════════════════════════════════════════════════════════ -->
+  <h2 id="sidebar-nav">Sidebar Navigation</h2>
+
+  <div class="ui-card">
+    <h3>Sidebar Behaviour</h3>
+    <p>The sidebar is a fixed left panel inside <code>DashboardLayout</code>. It has two states: <strong>expanded</strong> (w-60, shows labels) and <strong>collapsed</strong> (w-16, shows icons only). State is toggled by a hamburger button in the header area.</p>
+    <h4>Navigation Items (in order)</h4>
+    <table>
+      <thead><tr><th>Label</th><th>Path</th><th>Icon Description</th></tr></thead>
+      <tbody>
+        <tr><td>Dashboard</td><td><code>/dashboard</code></td><td>Four squares (grid layout)</td></tr>
+        <tr><td>Employees</td><td><code>/employees</code></td><td>Two people silhouette with + indicator</td></tr>
+        <tr><td>Roles</td><td><code>/roles</code></td><td>Shield icon</td></tr>
+        <tr><td>Teams</td><td><code>/teams</code></td><td>Two people silhouette (group)</td></tr>
+        <tr><td>Managers</td><td><code>/managers</code></td><td>Shield with checkmark</td></tr>
+        <tr><td>Inventory</td><td><code>/inventory</code></td><td>House/building icon</td></tr>
+      </tbody>
+    </table>
+    <h4>Active State</h4>
+    <p>Active nav items use <code>bg-indigo-50 text-indigo-600</code>. Inactive items use <code>text-gray-600</code> and hover to <code>bg-gray-50</code>.</p>
+    <h4>User Profile Footer</h4>
+    <p>The bottom of the sidebar shows the logged-in user's avatar (first letter of name, gradient background), full name, primary role name, and a logout button. In collapsed mode only the avatar and logout icon are shown.</p>
+  </div>
+
+  <!-- ═══ DASHBOARD ═════════════════════════════════════════════════════════ -->
+  <h2 id="dashboard">Dashboard Page</h2>
+
+  <div class="ui-card">
+    <h3>Overview</h3>
+    <p>Route: <code>/dashboard</code>. The first screen after login. Provides a high-level overview of the organisation.</p>
+
+    <h4>Header</h4>
+    <p>Personalised greeting based on time-of-day (<em>Good morning / Good afternoon / Good evening</em>), first name of the logged-in user, and today's date formatted as <code>Wednesday, 13 March 2026</code>.</p>
+
+    <h4>Stat Cards Row (4 cards)</h4>
+    <p>All four stats are fetched in parallel via <code>Promise.allSettled</code> on mount. Each card shows a gradient icon, label, and live count. Cards show a skeleton pulse while loading and <code>—</code> if the request fails.</p>
+    <table>
+      <thead><tr><th>#</th><th>Label</th><th>API Call</th><th>Value Extracted</th><th>Gradient</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Total Employees</td><td><code>GET /api/users</code></td><td><code>data.users.length</code></td><td>indigo → violet</td></tr>
+        <tr><td>2</td><td>Active Teams</td><td><code>GET /api/teams</code></td><td><code>data.teams.length</code></td><td>emerald → teal</td></tr>
+        <tr><td>3</td><td>Total Projects</td><td><code>GET /api/inventory/projects</code></td><td><code>data.items.length</code></td><td>amber → orange</td></tr>
+        <tr><td>4</td><td>Available Units</td><td><code>GET /api/inventory/units?status=AVAILABLE&amp;limit=1</code></td><td><code>data.meta.total</code></td><td>rose → pink</td></tr>
+      </tbody>
+    </table>
+
+    <h4>User Profile Card</h4>
+    <p>A full-width gradient card (<code>from-indigo-500 to-violet-600</code>) showing the logged-in user's avatar (first letter), name, email, and role badge. Below the card a small tagline links to the sidebar features.</p>
+
+    <h4>Quick Links Row (3 clickable cards)</h4>
+    <table>
+      <thead><tr><th>Title</th><th>Links to</th><th>Value shown</th></tr></thead>
+      <tbody>
+        <tr><td>Employees</td><td><code>/employees</code></td><td>Same count as stat card 1</td></tr>
+        <tr><td>Teams</td><td><code>/teams</code></td><td>Same count as stat card 2</td></tr>
+        <tr><td>Inventory Projects</td><td><code>/inventory</code></td><td>Same count as stat card 3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ EMPLOYEES ═════════════════════════════════════════════════════════ -->
+  <h2 id="employees">Employees Page</h2>
+
+  <div class="ui-card">
+    <h3>Overview</h3>
+    <p>Route: <code>/employees</code>. Lists all CRM users with their assigned roles. The super admin can add new employees.</p>
+
+    <h4>On Mount</h4>
+    <p>Calls <code>GET /api/users</code>. Response unwrapped from <code>data.users</code> or plain array.</p>
+
+    <h4>Header</h4>
+    <p>Title "Employees" + subtitle. <strong>Add Employee</strong> button (indigo → violet gradient) top-right opens the Add Employee Modal.</p>
+
+    <h4>Stat Cards (3)</h4>
+    <table>
+      <thead><tr><th>Label</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Total Employees</td><td>Total count from API</td></tr>
+        <tr><td>Showing</td><td>Count after search filter</td></tr>
+        <tr><td>Roles in Use</td><td>Count of unique role names across all employees</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Search Bar</h4>
+    <p>Real-time client-side filter by <strong>name</strong>, <strong>email</strong>, or <strong>role name</strong>. No API call on type.</p>
+
+    <h4>Employee Table</h4>
+    <p>Responsive grid table (4 columns on ≥sm, stacked on mobile).</p>
+    <table>
+      <thead><tr><th>Column</th><th>Source field</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Name</td><td><code>user.name</code></td><td>Coloured avatar (hsl from first char) + full name + email on mobile</td></tr>
+        <tr><td>Email</td><td><code>user.email</code></td><td>Hidden on mobile (shown in name cell instead)</td></tr>
+        <tr><td>Roles</td><td><code>user.roles[]</code></td><td>Role badge pills. <code>superadmin</code> = purple, <code>admin</code> = blue, default = gray</td></tr>
+        <tr><td>Joined</td><td><code>user.createdAt</code></td><td>Formatted <code>DD MMM YYYY</code> (en-IN locale)</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Empty States</h4>
+    <ul style="margin:8px 0 8px 20px; font-size:13px; line-height:1.8;">
+      <li>Loading: spinning border indicator + "Loading employees..."</li>
+      <li>Error: red circle icon + error message + "Try again" link</li>
+      <li>No results (search): "No employees match your search"</li>
+      <li>No employees at all: "No employees yet" + "Add your first employee" link</li>
+    </ul>
+
+    <h4>Footer</h4>
+    <p>Shows "Showing X of Y employees" below the table.</p>
+  </div>
+
+  <!-- Add Employee Modal -->
+  <h2 id="add-employee">Add Employee Modal</h2>
+
+  <div class="ui-card">
+    <h3>Trigger</h3>
+    <p>Clicking <strong>Add Employee</strong> on the Employees page header.</p>
+
+    <h3>On Open</h3>
+    <p>Form resets to empty. Immediately fetches <code>GET /api/rbac/roles</code> to populate the roles checklist.</p>
+
+    <h3>Form Fields</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Validation</th></tr></thead>
+      <tbody>
+        <tr><td>Full Name</td><td>text input</td><td>Yes</td><td>min 2 characters</td></tr>
+        <tr><td>Email Address</td><td>email input</td><td>Yes</td><td>valid email format, must be unique on backend</td></tr>
+        <tr><td>Password</td><td>password input + show/hide toggle</td><td>Yes</td><td>min 6 characters</td></tr>
+        <tr><td>Assign Role(s)</td><td>scrollable checkbox list (max-h-44)</td><td>Yes</td><td>at least 1 role must be selected</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Role Selector UI</h3>
+    <p>Each role is a full-width button with a square checkbox on the left, role name (capitalised), and optional description. Multiple roles can be selected. Selected state: <code>bg-indigo-50 border-indigo-300</code>. The checkbox turns <code>bg-indigo-600</code> with a white checkmark SVG when selected.</p>
+
+    <h3>Submit Flow</h3>
+    <ol class="flow-steps">
+      <li>Client validates all fields (name length, email present, password length ≥ 6, at least one role).</li>
+      <li>Calls <code>POST /api/users</code> with <code>{ name, email, password, roleIds: string[] }</code>.</li>
+      <li>On success: response unwrapped as <code>data.user ?? data</code>, passed to <code>onSuccess()</code> which prepends the new employee to the list and shows a green success toast for 4 seconds.</li>
+      <li>Modal closes automatically.</li>
+    </ol>
+
+    <h3>Error Handling</h3>
+    <p>Displays red banner below the modal header. Special handling for CUID vs UUID role ID mismatch (Zod validation error on <code>roleIds</code> — shows a developer-friendly message explaining the database seed issue).</p>
+
+    <h3>API Call</h3>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method POST">POST</span>
+        <span class="endpoint-path">/api/users</span>
+        <span class="perm-badge">user.write</span>
+      </div>
+      <div class="endpoint-body">
+        <pre>{
+  "name": "John Doe",          // required — min 2 chars
+  "email": "john@company.com", // required — unique email
+  "password": "Secret@123",    // required — min 6 chars
+  "roleIds": ["&lt;uuid&gt;"]        // required — min 1 role UUID
+  // teamId is optional (not used in this modal)
+}</pre>
+        <p>Response 201:</p>
+        <pre>{
+  "user": {
+    "id": "uuid",
+    "name": "John Doe",
+    "email": "john@company.com",
+    "roles": [{ "id": "uuid", "name": "manager", "description": "..." }],
+    "teamMembers": []
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ROLES ══════════════════════════════════════════════════════════════ -->
+  <h2 id="roles">Roles Page</h2>
+
+  <div class="ui-card">
+    <h3>Overview</h3>
+    <p>Route: <code>/roles</code>. Lists all RBAC roles as coloured cards. Super admin can create new roles and manage permissions for each role.</p>
+
+    <h4>On Mount</h4>
+    <p>Calls <code>GET /api/rbac/roles</code>. Response must be a plain array.</p>
+
+    <h4>Header</h4>
+    <p>Title "Roles" + subtitle. <strong>Create Role</strong> button (violet → purple gradient) opens the Add Role Modal.</p>
+
+    <h4>Stat Cards (2)</h4>
+    <table>
+      <thead><tr><th>Label</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Total Roles</td><td>Total count from API</td></tr>
+        <tr><td>Showing</td><td>Count after search filter</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Search Bar</h4>
+    <p>Real-time filter by role <strong>name</strong> or <strong>description</strong>.</p>
+
+    <h4>Role Cards Grid (1→2→3 columns)</h4>
+    <p>Each card has:</p>
+    <ul style="margin:8px 0 8px 20px; font-size:13px; line-height:1.8;">
+      <li>Gradient icon square (deterministic colour from first char of role name)</li>
+      <li>Role name (capitalised) + "Pre-seeded" purple badge if name is "superadmin"</li>
+      <li>Description or "No description provided."</li>
+      <li>Permission count with lock icon (shown in violet if > 0)</li>
+      <li><strong>Manage</strong> button (violet) — opens Manage Permissions Modal</li>
+    </ul>
+    <p>A dashed "Create new role" card at the end of the grid acts as a secondary trigger for the Create Role Modal.</p>
+
+    <h4>Colour System for Role Cards</h4>
+    <table>
+      <thead><tr><th>Index (charCode of first letter % 6)</th><th>Gradient</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>indigo → violet</td></tr>
+        <tr><td>1</td><td>emerald → teal</td></tr>
+        <tr><td>2</td><td>amber → orange</td></tr>
+        <tr><td>3</td><td>rose → pink</td></tr>
+        <tr><td>4</td><td>sky → blue</td></tr>
+        <tr><td>5</td><td>fuchsia → purple</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add Role Modal -->
+  <h2 id="add-role">Add Role Modal</h2>
+
+  <div class="ui-card">
+    <h3>Form Fields</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Validation</th></tr></thead>
+      <tbody>
+        <tr><td>Role Name</td><td>text input</td><td>Yes</td><td>min 2 characters</td></tr>
+        <tr><td>Description</td><td>textarea (3 rows)</td><td>No</td><td>free text</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warn">
+      <span class="icon">⚠️</span>
+      <div>An amber info note inside the modal reads: <em>"New roles start with zero permissions. You can assign permissions to this role after creating it."</em></div>
+    </div>
+
+    <h3>Submit Flow</h3>
+    <ol class="flow-steps">
+      <li>Validates name ≥ 2 chars.</li>
+      <li>Calls <code>POST /api/rbac/roles</code> with <code>{ name, description? }</code>.</li>
+      <li>On success: new role appended to roles list, green toast shown for 4 seconds.</li>
+    </ol>
+
+    <h3>API Call</h3>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method POST">POST</span>
+        <span class="endpoint-path">/api/rbac/roles</span>
+        <span class="perm-badge">role.write</span>
+      </div>
+      <div class="endpoint-body">
+        <pre>{
+  "name": "sales_agent",        // required — min 2 chars
+  "description": "Field sales"  // optional
+}</pre>
+        <p>Response 201:</p>
+        <pre>{
+  "id": "uuid",
+  "name": "sales_agent",
+  "description": "Field sales",
+  "createdAt": "2026-03-13T10:00:00.000Z"
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage Permissions Modal -->
+  <h2 id="manage-permissions">Manage Permissions Modal</h2>
+
+  <div class="ui-card">
+    <h3>Trigger</h3>
+    <p>Clicking <strong>Manage</strong> on any role card on the Roles page.</p>
+
+    <h3>On Open</h3>
+    <p>Fetches in parallel:</p>
+    <ul style="margin:8px 0 8px 20px; font-size:13px; line-height:1.8;">
+      <li><code>GET /api/rbac/permissions</code> — all available permissions</li>
+      <li><code>GET /api/rbac/roles/:id</code> — currently assigned permissions for this role</li>
+    </ul>
+
+    <h3>Modal Layout</h3>
+    <p>Max width <code>max-w-2xl</code>, max height <code>max-h-[90vh]</code>, scrollable body.</p>
+    <ol class="flow-steps">
+      <li><strong>Header:</strong> Lock icon + "Permissions — {role name}" + "X / Y permissions assigned" count.</li>
+      <li><strong>Coverage progress bar:</strong> Violet gradient bar showing % of all permissions assigned to this role. Updates live on each toggle.</li>
+      <li><strong>Search bar:</strong> Filters by permission key, description, or module name.</li>
+      <li><strong>Grouped permission list:</strong> Permissions grouped by <code>module</code>, each group has a coloured module header badge and X/Y sub-count.</li>
+      <li><strong>Footer:</strong> "Changes are saved automatically on each click" label + Done button.</li>
+    </ol>
+
+    <h3>Module Groups &amp; Colours</h3>
+    <table>
+      <thead><tr><th>Module</th><th>Icon</th><th>Colour</th></tr></thead>
+      <tbody>
+        <tr><td>User</td><td>👤</td><td>blue-50 / blue-600</td></tr>
+        <tr><td>Role</td><td>🛡️</td><td>violet-50 / violet-600</td></tr>
+        <tr><td>Permission</td><td>🔑</td><td>indigo-50 / indigo-600</td></tr>
+        <tr><td>Team</td><td>🏆</td><td>emerald-50 / emerald-600</td></tr>
+        <tr><td>Attendance</td><td>📅</td><td>teal-50 / teal-600</td></tr>
+        <tr><td>Location</td><td>📍</td><td>rose-50 / rose-600</td></tr>
+        <tr><td>Device</td><td>📱</td><td>orange-50 / orange-600</td></tr>
+        <tr><td>Consent</td><td>✅</td><td>lime-50 / lime-600</td></tr>
+        <tr><td>Lead</td><td>📋</td><td>amber-50 / amber-600</td></tr>
+        <tr><td>Inventory</td><td>🏠</td><td>cyan-50 / cyan-600</td></tr>
+        <tr><td>Cold Call</td><td>📞</td><td>pink-50 / pink-600</td></tr>
+        <tr><td>System</td><td>⚙️</td><td>gray-50 / gray-600</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Permission Toggle Behaviour</h3>
+    <p>Each permission is a full-width button with a checkbox. Clicking immediately calls the API — no save button needed:</p>
+    <ul style="margin:8px 0 8px 20px; font-size:13px; line-height:1.8;">
+      <li><strong>Assign:</strong> <code>POST /api/rbac/roles/:id/permissions</code> with <code>{ permissionId }</code></li>
+      <li><strong>Remove:</strong> <code>DELETE /api/rbac/roles/:id/permissions/:permId</code></li>
+    </ul>
+    <p>During the API call, the checkbox shows a small spinner. Only one toggle can be in-flight at a time (<code>togglingId</code> guard). On success, <code>assignedIds</code> Set is updated optimistically.</p>
+
+    <h3>Permission Item Layout</h3>
+    <p>2-column grid per module. Each item: checkbox + permission <code>key</code> in monospace + description in gray. Selected state: <code>bg-violet-50 border-violet-200</code>, key text in <code>text-violet-700</code>.</p>
+  </div>
+
+  <!-- ═══ TEAMS ══════════════════════════════════════════════════════════════ -->
+  <h2 id="teams">Teams Page</h2>
+
+  <div class="ui-card">
+    <h3>Overview</h3>
+    <p>Route: <code>/teams</code>. Full CRUD for teams. Displays teams as cards. Each card shows team info, lead, member count, and action buttons.</p>
+
+    <h4>On Mount</h4>
+    <p>Calls <code>GET /api/teams</code>. Response unwrapped from <code>data.teams</code>, <code>data.items</code>, <code>data.data</code>, or plain array.</p>
+
+    <h4>Header</h4>
+    <p>Title "Teams" + subtitle. <strong>Create Team</strong> button (emerald → teal gradient).</p>
+
+    <h4>Stat Cards (3)</h4>
+    <table>
+      <thead><tr><th>Label</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Total Teams</td><td>teams.length</td></tr>
+        <tr><td>Showing</td><td>filtered.length</td></tr>
+        <tr><td>Total Members</td><td>Sum of <code>team.memberCount ?? team._count?.members ?? 0</code></td></tr>
+      </tbody>
+    </table>
+
+    <h4>Search Bar</h4>
+    <p>Filters by team <strong>name</strong> or <strong>team lead name</strong>.</p>
+
+    <h4>Team Cards Grid (1→2→3 columns)</h4>
+    <p>Each card has:</p>
+    <ul style="margin:8px 0 8px 20px; font-size:13px; line-height:1.8;">
+      <li>Coloured top accent bar (gradient determined by first char of team name)</li>
+      <li>Team avatar square with 1–2 letter initials (from first letters of each word in the name)</li>
+      <li>Team name + creation date</li>
+      <li>Team Lead section: lead name + email on gray background, "Lead" amber badge. If no lead: "No team lead assigned"</li>
+      <li>Member count with people icon</li>
+      <li>Action row: <strong>Members</strong> button (emerald), <strong>Edit</strong> icon button (blue), <strong>Delete</strong> icon button (red)</li>
+    </ul>
+    <p>A dashed "Create new team" card at the end acts as secondary trigger.</p>
+
+    <h4>Colour System for Team Cards</h4>
+    <p>Same 6-colour deterministic system as roles (charCode of first letter % 6):<br>
+    emerald→teal, indigo→violet, amber→orange, rose→pink, sky→blue, fuchsia→purple</p>
+  </div>
+
+  <!-- Create Team Modal -->
+  <h2 id="create-team">Create Team Modal</h2>
+
+  <div class="ui-card">
+    <h3>On Open</h3>
+    <p>Form resets. Fetches <code>GET /api/users</code> to populate the Team Lead dropdown. Only users whose <strong>role name contains "lead"</strong> (case-insensitive) appear in the dropdown.</p>
+
+    <h3>Form Fields</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Validation</th></tr></thead>
+      <tbody>
+        <tr><td>Team Name</td><td>text input</td><td>Yes</td><td>min 2 characters</td></tr>
+        <tr><td>Team Lead</td><td>select dropdown</td><td>No</td><td>Only users with a "lead" role name shown. "— No team lead —" is the default.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warn">
+      <span class="icon">⚠️</span>
+      <div>If no users with a "lead" role are found, an amber warning shows: <em>"No employees with a Team Lead role found. Assign the Team Lead role to an employee first."</em></div>
+    </div>
+
+    <h3>Submit Flow</h3>
+    <ol class="flow-steps">
+      <li>Validates name ≥ 2 chars.</li>
+      <li>Calls <code>POST /api/teams</code> with <code>{ name, leadId? }</code>.</li>
+      <li>On success: response unwrapped as <code>data.team ?? data</code>, prepended to teams list, green toast shown.</li>
+    </ol>
+
+    <h3>API Call</h3>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method POST">POST</span>
+        <span class="endpoint-path">/api/teams</span>
+        <span class="perm-badge">team.write</span>
+      </div>
+      <div class="endpoint-body">
+        <pre>{
+  "name": "Sales East",   // required — min 2 chars
+  "leadId": "uuid"        // optional — user ID to assign as lead
+}</pre>
+        <p>Response 201:</p>
+        <pre>{
+  "id": "uuid",
+  "name": "Sales East",
+  "teamLeadId": "uuid",
+  "createdAt": "2026-03-13T...",
+  "updatedAt": "2026-03-13T..."
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Team Modal -->
+  <h2 id="edit-team">Edit Team Modal</h2>
+
+  <div class="ui-card">
+    <h3>Trigger</h3>
+    <p>Clicking the blue pencil icon on a team card.</p>
+
+    <h3>On Open</h3>
+    <p>Form pre-filled with existing team name and lead ID. Fetches users list (same lead filter as Create modal).</p>
+
+    <h3>Form Fields</h3>
+    <p>Same as Create Team (Team Name + Team Lead). Team Lead can be set to "— No team lead —" to clear the current lead.</p>
+
+    <h3>Submit Flow</h3>
+    <ol class="flow-steps">
+      <li>Validates name ≥ 2 chars.</li>
+      <li>Tries <code>PATCH /api/teams/:id</code>. Falls back to <code>PUT /api/teams/:id</code> on 404/405.</li>
+      <li>On success: updates the team in the local list, green toast shown.</li>
+    </ol>
+
+    <h3>API Calls</h3>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method PATCH">PATCH</span>
+        <span class="endpoint-path">/api/teams/:id</span>
+        <span class="perm-badge">team.write</span>
+      </div>
+      <div class="endpoint-body">
+        <pre>{
+  "name": "Sales West",    // optional
+  "leadId": "uuid" | null  // optional — null to clear lead
+}</pre>
+        <p>Response 200: updated Team object</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Team -->
+  <h2 id="delete-team">Delete Team Confirmation</h2>
+
+  <div class="ui-card">
+    <h3>Trigger</h3>
+    <p>Clicking the red trash icon on a team card.</p>
+
+    <h3>Layout</h3>
+    <p>Centred modal (<code>max-w-sm</code>). Red icon square at top, "Delete Team" title, "This action cannot be undone" subtitle. Warning text: <em>"Delete "{team name}"? All member assignments will be removed."</em></p>
+
+    <h3>Confirm Flow</h3>
+    <ol class="flow-steps">
+      <li>User clicks red <strong>Delete Team</strong> button.</li>
+      <li>Calls <code>DELETE /api/teams/:id</code>.</li>
+      <li>On success: team removed from local list, green toast shown.</li>
+      <li>On error: red error banner shown inside the modal (modal stays open so the user can dismiss).</li>
+    </ol>
+
+    <h3>API Call</h3>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method DELETE">DELETE</span>
+        <span class="endpoint-path">/api/teams/:id</span>
+        <span class="perm-badge">team.write</span>
+      </div>
+      <div class="endpoint-body">
+        <p>No request body. Response 204 — No content.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage Members Modal -->
+  <h2 id="manage-members">Manage Members Modal</h2>
+
+  <div class="ui-card">
+    <h3>Trigger</h3>
+    <p>Clicking the green <strong>Members</strong> button on a team card.</p>
+
+    <h3>Layout</h3>
+    <p>Two-tab modal (<code>max-w-2xl</code>): <strong>Members</strong> (view &amp; remove) and <strong>Add Employees</strong> (multi-select new members).</p>
+
+    <h4>Members Tab</h4>
+    <p>Shows current team members fetched from <code>GET /api/teams/:teamId/members</code>. Each row:</p>
+    <ul style="margin:8px 0 8px 20px; font-size:13px; line-height:1.8;">
+      <li>Avatar with initials</li>
+      <li>Name + email</li>
+      <li>Role badge: <code>LEAD</code> (amber), <code>ASSISTANT_LEAD</code> (blue), <code>MEMBER</code> (gray)</li>
+      <li>Red remove button → calls <code>DELETE /api/teams/:teamId/members/:userId</code></li>
+    </ul>
+
+    <h4>Add Employees Tab</h4>
+    <p>Fetches <code>GET /api/users</code> and filters out existing members. Multi-select with checkboxes. Role selector per batch (MEMBER / ASSISTANT_LEAD / LEAD).</p>
+
+    <h4>Add Members Flow</h4>
+    <ol class="flow-steps">
+      <li>Tries <code>POST /api/teams/:teamId/members/bulk</code> with <code>{ userIds, role }</code>.</li>
+      <li>Falls back to <code>POST /api/teams/:teamId/members</code> with <code>{ members: [{userId, role}] }</code>.</li>
+      <li>Falls back further to individual <code>POST /api/teams/:teamId/members</code> calls per user with <code>{ userId, role }</code>.</li>
+    </ol>
+
+    <h4>Search</h4>
+    <p>Both tabs have a real-time search bar that filters by name or email.</p>
+  </div>
+
+  <!-- ═══ MANAGERS ═══════════════════════════════════════════════════════════ -->
+  <h2 id="managers">Managers Page</h2>
+
+  <div class="ui-card">
+    <h3>Overview</h3>
+    <p>Route: <code>/managers</code>. Displays all managers with their currently assigned teams. Super admin can assign or unassign teams from each manager.</p>
+
+    <h3>Manager Detection Logic</h3>
+    <p>A "manager" is any user whose <strong>role name contains "manager"</strong> (case-insensitive substring match). If no such users are found, the page falls back to showing all users, with an amber warning banner.</p>
+
+    <div class="warn">
+      <span class="icon">⚠️</span>
+      <div>Banner when no manager role exists: <em>"No users with a Manager role found. Showing all users — assign a role containing "manager" to an employee to designate them as a manager."</em></div>
+    </div>
+
+    <h3>On Mount</h3>
+    <p>Fetches in parallel:</p>
+    <ul style="margin:8px 0 8px 20px; font-size:13px; line-height:1.8;">
+      <li><code>GET /api/users</code> → to identify managers</li>
+      <li><code>GET /api/teams</code> → to know which teams exist and which are assigned</li>
+    </ul>
+    <p>After fetch, teams are passed through <code>applyStoredAssignments()</code> which merges <code>localStorage</code> data (see Persistence section below).</p>
+
+    <h3>Stat Cards (3)</h3>
+    <table>
+      <thead><tr><th>Label</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Total Managers</td><td>managers.length (or users.length if no managers)</td></tr>
+        <tr><td>Teams Assigned</td><td>teams where <code>team.managerId !== null</code></td></tr>
+        <tr><td>Teams Unassigned</td><td>teams where <code>team.managerId === null</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Manager Cards Grid (1→2→3 columns)</h3>
+    <p>Each card:</p>
+    <ul style="margin:8px 0 8px 20px; font-size:13px; line-height:1.8;">
+      <li>Coloured top accent bar (6-colour deterministic from first char of manager name)</li>
+      <li>Avatar square with initials + name + email + role badge pills (violet)</li>
+      <li>"Assigned Teams (N)" section: coloured team pills (up to 3 shown, "+N more" if more). If none: gray "No teams assigned yet" placeholder</li>
+      <li><strong>Manage Teams</strong> button (violet) opens Assign Teams Modal</li>
+    </ul>
+
+    <h3>Team Assignment Persistence</h3>
+    <p>Since <code>GET /api/teams</code> does not return a <code>managerId</code> field, assignments are stored in <code>localStorage</code> under the key <code>crm_manager_team_assignments</code> as a flat map:</p>
+    <pre>// localStorage value
+{
+  "&lt;teamId&gt;": "&lt;managerId&gt;",
+  "&lt;teamId2&gt;": "&lt;managerId&gt;"
+}</pre>
+    <p>On every page load, this map is overlaid onto the fresh API response before setting state. On every save, the map is updated atomically with the new assignments.</p>
+
+    <div class="note">
+      <span class="icon">ℹ️</span>
+      <div>If your backend adds a <code>managerId</code> field to the Team model and returns it in <code>GET /api/teams</code>, remove the localStorage layer — the field will be picked up directly.</div>
+    </div>
+  </div>
+
+  <!-- Assign Teams Modal -->
+  <h2 id="assign-teams">Assign Teams Modal</h2>
+
+  <div class="ui-card">
+    <h3>Trigger</h3>
+    <p>Clicking <strong>Manage Teams</strong> on any manager card.</p>
+
+    <h3>Layout</h3>
+    <p>Violet gradient header, manager info chip (name, email, live "N selected" counter), search bar, scrollable team checklist, footer with Cancel + Save Changes.</p>
+
+    <h3>Team List</h3>
+    <p>Every team is shown as a button with:</p>
+    <ul style="margin:8px 0 8px 20px; font-size:13px; line-height:1.8;">
+      <li>Coloured avatar square with team initials</li>
+      <li>Team name + member count</li>
+      <li>Square checkbox (violet when selected)</li>
+      <li>If the team is already assigned to a <em>different</em> manager: shown as dimmed (opacity-50) with "Other mgr" amber label — cannot be checked</li>
+    </ul>
+
+    <h3>Pre-selection</h3>
+    <p>Teams already assigned to this manager are pre-checked using <code>currentTeamIds</code> (derived from <code>getManagerTeams(managerId)</code> which filters <code>teams</code> by <code>team.managerId === managerId</code>).</p>
+
+    <h3>Save Flow</h3>
+    <ol class="flow-steps">
+      <li>Computes <code>toAdd</code> = newly checked IDs not in original set.</li>
+      <li>Computes <code>toRemove</code> = originally checked IDs now unchecked.</li>
+      <li>Fires all changes in parallel: <code>PATCH /api/teams/:id</code> with <code>{ managerId }</code> for additions, <code>{ managerId: null }</code> for removals.</li>
+      <li>On success: <code>onSaved(assignedIds)</code> → parent updates local state + localStorage + shows success toast.</li>
+    </ol>
+
+    <h3>Save button disabled when</h3>
+    <p>No changes detected (selected set equals original set), or a save is in progress.</p>
+
+    <h3>API Calls</h3>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method PATCH">PATCH</span>
+        <span class="endpoint-path">/api/teams/:id</span>
+        <span class="perm-badge">team.write</span>
+      </div>
+      <div class="endpoint-body">
+        <pre>// Assign team to manager
+{ "managerId": "&lt;userUuid&gt;" }
+
+// Remove team from manager
+{ "managerId": null }</pre>
+        <p>Response 200: updated Team object.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ API ENDPOINTS ═══════════════════════════════════════ -->
+  <h2 id="api-auth">API — Auth</h2>
+  <p>Base path: <code>/api/auth</code></p>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/auth/login</span>
+      <span style="font-size:11px;color:var(--muted);">No auth required</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Authenticates a user and returns a JWT access token. A refresh token is set as an HttpOnly cookie.</p>
+      <h4>Request Body</h4>
+      <pre>{
+  "email": "superadmin@example.com",  // required — valid email
+  "password": "SuperSecurePassword123!"  // required
+}</pre>
+      <h4>Response 200</h4>
+      <pre>{
+  "accessToken": "eyJhbGciOiJIUzI1...",
+  "user": {
+    "id": "uuid",
+    "name": "Super Admin",
+    "email": "superadmin@example.com",
+    "roles": [{ "name": "superadmin" }]
+  }
+}</pre>
+      <h4>Error Responses</h4>
+      <table>
+        <thead><tr><th>Status</th><th>Body</th><th>Cause</th></tr></thead>
+        <tbody>
+          <tr><td>400</td><td><code>{ "error": {...} }</code></td><td>Validation failed (Zod)</td></tr>
+          <tr><td>401</td><td><code>{ "error": "Invalid credentials" }</code></td><td>Wrong email or password</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/auth/me</span>
+      <span class="perm-badge">requireAuth</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns the currently authenticated user with all roles and flattened permissions array.</p>
+      <h4>Response 200</h4>
+      <pre>{
+  "user": {
+    "id": "uuid",
+    "name": "Super Admin",
+    "email": "superadmin@example.com",
+    "roles": [{ "id": "uuid", "name": "superadmin" }],
+    "permissions": ["user.read", "user.write", "role.write", ...]
+  }
+}</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/auth/refresh</span>
+      <span class="perm-badge">requireAuth</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Issues a new access token using the refresh token (cookie or body).</p>
+      <h4>Request Body (optional)</h4>
+      <pre>{ "refreshToken": "eyJhbGciOi..." }  // or send via cookie</pre>
+      <h4>Response 200</h4>
+      <pre>{ "accessToken": "eyJhbGciOiJIUzI1..." }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/auth/logout</span>
+      <span class="perm-badge">requireAuth</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Invalidates the refresh token server-side.</p>
+      <h4>Request Body (optional)</h4>
+      <pre>{ "refreshToken": "eyJhbGciOi..." }  // or send via cookie</pre>
+      <h4>Response 200</h4>
+      <pre>{ "message": "Logged out successfully" }</pre>
+    </div>
+  </div>
+
+  <!-- ═══ API USERS ══════════════════════════════════════════════════════════ -->
+  <h2 id="api-users">API — Users</h2>
+  <p>Base path: <code>/api/users</code> · Permission: <code>user.write</code> / <code>user.read</code></p>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/users</span>
+      <span class="perm-badge">user.write</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Creates a new CRM user. Optionally joins them to a team at creation.</p>
+      <h4>Request Body</h4>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>name</td><td>string</td><td>Yes</td><td>min 2 chars</td></tr>
+          <tr><td>email</td><td>string</td><td>Yes</td><td>valid email, unique</td></tr>
+          <tr><td>password</td><td>string</td><td>Yes</td><td>min 6 chars</td></tr>
+          <tr><td>roleIds</td><td>UUID[]</td><td>Yes</td><td>min 1 role</td></tr>
+          <tr><td>teamId</td><td>UUID</td><td>No</td><td>adds user as MEMBER of this team</td></tr>
+        </tbody>
+      </table>
+      <h4>Response 201</h4>
+      <pre>{
+  "user": {
+    "id": "uuid",
+    "name": "John Doe",
+    "email": "john@company.com",
+    "roles": [{ "id": "uuid", "name": "manager", "description": "..." }],
+    "teamMembers": [
+      { "teamId": "uuid", "teamName": "Sales", "role": "MEMBER", "joinedAt": "..." }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/users</span>
+      <span class="perm-badge">user.read</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns up to 100 users ordered by creation date (newest first). Each user includes roles and all team memberships.</p>
+      <h4>Response 200</h4>
+      <pre>{
+  "users": [
+    {
+      "id": "uuid",
+      "name": "John Doe",
+      "email": "john@company.com",
+      "createdAt": "2026-03-13T...",
+      "roles": [{ "id": "uuid", "name": "manager" }],
+      "teamMembers": [
+        { "teamId": "uuid", "teamName": "Sales East", "role": "MEMBER", "joinedAt": "..." }
+      ]
+    }
+  ]
+}</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/users/:id</span>
+      <span class="perm-badge">user.read</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Fetches a single user by ID.</p>
+      <h4>Response 200</h4>
+      <pre>{ "user": { /* same shape as list item */ } }</pre>
+      <h4>Response 404</h4>
+      <pre>{ "error": "User not found" }</pre>
+    </div>
+  </div>
+
+  <!-- ═══ API ROLES ══════════════════════════════════════════════════════════ -->
+  <h2 id="api-roles">API — Roles (RBAC)</h2>
+  <p>Base path: <code>/api/rbac/roles</code></p>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/rbac/roles</span>
+      <span class="perm-badge">role.write</span>
+    </div>
+    <div class="endpoint-body">
+      <pre>// Request
+{ "name": "sales_agent", "description": "Field sales rep" }
+
+// Response 201
+{ "id": "uuid", "name": "sales_agent", "description": "Field sales rep", "createdAt": "..." }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/rbac/roles</span>
+      <span class="perm-badge">role.read</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns all roles as a plain array.</p>
+      <pre>[
+  { "id": "uuid", "name": "superadmin", "description": "Full access", "createdAt": "..." },
+  { "id": "uuid", "name": "manager", "description": "Team management", "createdAt": "..." }
+]</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/rbac/roles/:id</span>
+      <span class="perm-badge">role.read</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns a single role. Used by Manage Permissions modal to load currently assigned permissions.</p>
+      <pre>{
+  "id": "uuid",
+  "name": "manager",
+  "description": "...",
+  "permissions": [
+    { "permission": { "id": "uuid", "key": "team.write", "description": "...", "module": "Team" } }
+  ]
+}</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method PUT">PUT</span>
+      <span class="endpoint-path">/api/rbac/roles/:id</span>
+      <span class="perm-badge">role.write</span>
+    </div>
+    <div class="endpoint-body">
+      <pre>// Request (all optional)
+{ "name": "new_name", "description": "Updated description" }
+
+// Response 200
+{ "id": "uuid", "name": "new_name", "description": "Updated description", "updatedAt": "..." }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method DELETE">DELETE</span>
+      <span class="endpoint-path">/api/rbac/roles/:id</span>
+      <span class="perm-badge">role.delete</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Deletes the role. Response 204 — No content.</p>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/rbac/roles/:id/permissions</span>
+      <span class="perm-badge">role.write</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Assigns a permission to a role.</p>
+      <pre>// Request
+{ "permissionId": "uuid" }
+
+// Response 201
+{ "roleId": "uuid", "permissionId": "uuid", "createdAt": "..." }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method DELETE">DELETE</span>
+      <span class="endpoint-path">/api/rbac/roles/:id/permissions/:permId</span>
+      <span class="perm-badge">role.write</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Removes a permission from a role.</p>
+      <pre>// Response 200
+{ "roleId": "uuid", "permissionId": "uuid" }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/rbac/roles/:id/permissions</span>
+      <span class="perm-badge">role.read</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns all permissions assigned to a role.</p>
+      <pre>[
+  { "id": "uuid", "key": "team.write", "description": "Write teams", "module": "Team" }
+]</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/rbac/roles/assign-to-user</span>
+      <span class="perm-badge">role.write</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Assigns an existing role to an existing user.</p>
+      <pre>// Request
+{ "userId": "uuid", "roleId": "uuid" }
+
+// Response 201
+{ "userId": "uuid", "roleId": "uuid", "createdAt": "..." }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method DELETE">DELETE</span>
+      <span class="endpoint-path">/api/rbac/roles/user/:userId/role/:roleId</span>
+      <span class="perm-badge">role.write</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Removes a role from a user.</p>
+      <pre>// Response 200
+{ "userId": "uuid", "roleId": "uuid" }</pre>
+    </div>
+  </div>
+
+  <!-- ═══ API PERMISSIONS ═══════════════════════════════════════════════════ -->
+  <h2 id="api-permissions">API — Permissions (RBAC)</h2>
+  <p>Base path: <code>/api/rbac/permissions</code></p>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/rbac/permissions</span>
+      <span class="perm-badge">permission.write</span>
+    </div>
+    <div class="endpoint-body">
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>key</td><td>string</td><td>Yes</td><td>min 3 chars, unique (e.g. <code>report.read</code>)</td></tr>
+          <tr><td>description</td><td>string</td><td>No</td><td>human-readable label</td></tr>
+          <tr><td>module</td><td>string</td><td>No</td><td>grouping key (e.g. "Team", "User")</td></tr>
+        </tbody>
+      </table>
+      <pre>// Response 201
+{ "id": "uuid", "key": "report.read", "description": "View reports", "module": "Report", "createdAt": "..." }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/rbac/permissions</span>
+      <span class="perm-badge">permission.read</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns all permissions as a plain array. Used by Manage Permissions modal.</p>
+      <pre>[
+  { "id": "uuid", "key": "user.read", "description": "View user data", "module": "User" },
+  ...
+]</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/rbac/permissions/:id</span>
+      <span class="perm-badge">permission.read</span>
+    </div>
+    <div class="endpoint-body">
+      <pre>{ "id": "uuid", "key": "user.read", "description": "View user data", "module": "User" }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method PUT">PUT</span>
+      <span class="endpoint-path">/api/rbac/permissions/:id</span>
+      <span class="perm-badge">permission.write</span>
+    </div>
+    <div class="endpoint-body">
+      <pre>// Request (all optional)
+{ "key": "report.export", "description": "Export reports", "module": "Report" }
+
+// Response 200
+{ "id": "uuid", "key": "report.export", "description": "Export reports", "module": "Report", "updatedAt": "..." }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method DELETE">DELETE</span>
+      <span class="endpoint-path">/api/rbac/permissions/:id</span>
+      <span class="perm-badge">permission.delete</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Response 204 — No content.</p>
+    </div>
+  </div>
+
+  <!-- ═══ API TEAMS ══════════════════════════════════════════════════════════ -->
+  <h2 id="api-teams">API — Teams</h2>
+  <p>Base path: <code>/api/teams</code></p>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/teams</span>
+      <span class="perm-badge">team.write</span>
+    </div>
+    <div class="endpoint-body">
+      <pre>// Request
+{ "name": "Sales East", "leadId": "uuid" }  // leadId optional
+
+// Response 201
+{ "id": "uuid", "name": "Sales East", "teamLeadId": "uuid", "createdAt": "...", "updatedAt": "..." }</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/teams</span>
+      <span class="perm-badge">team.read</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns all teams. Each team includes team lead info, up to 5 member previews, and total member count.</p>
+      <pre>{
+  "teams": [
+    {
+      "id": "uuid",
+      "name": "Sales East",
+      "teamLeadId": "uuid",
+      "teamLead": { "id": "uuid", "name": "Ravi Sharma", "email": "ravi@company.com" },
+      "members": [ { "id": "...", "userId": "...", "role": "MEMBER", "user": {...} } ],
+      "_count": { "members": 12 },
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  ]
+}</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/teams/:id</span>
+      <span class="perm-badge">team.read</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns a single team with all members and their nested user profile + roles.</p>
+      <pre>{ "id": "uuid", "name": "Sales East", "members": [...], "createdAt": "...", "updatedAt": "..." }</pre>
+      <p>Response 404: <code>{ "error": "Team not found" }</code></p>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method PATCH">PATCH</span>
+      <span class="endpoint-path">/api/teams/:id</span>
+      <span class="perm-badge">team.write</span>
+    </div>
+    <div class="endpoint-body">
+      <pre>// Request (all optional)
+{
+  "name": "Sales West",
+  "leadId": "uuid" | null,   // null to clear lead
+  "managerId": "uuid" | null  // for manager assignment feature
+}
+
+// Response 200 — updated Team object</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method DELETE">DELETE</span>
+      <span class="endpoint-path">/api/teams/:id</span>
+      <span class="perm-badge">team.write</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Deletes team and all TeamMember records (cascade). Response 204 — No content.</p>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/teams/:teamId/members</span>
+      <span class="perm-badge">team.read</span>
+    </div>
+    <div class="endpoint-body">
+      <pre>{
+  "count": 10,
+  "rows": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "teamId": "uuid",
+      "role": "MEMBER",
+      "joinedAt": "...",
+      "user": { "id": "uuid", "name": "Priya Mehta", "email": "priya@company.com", "roles": [...] }
+    }
+  ]
+}</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/teams/:teamId/members</span>
+      <span class="perm-badge">team.write</span>
+    </div>
+    <div class="endpoint-body">
+      <pre>// Assign single or multiple users (at least one of userId/userIds required)
+{
+  "userId": "uuid",              // single user
+  "userIds": ["uuid", "uuid"],   // multiple users
+  "role": "MEMBER"               // optional — MEMBER | ASSISTANT_LEAD | LEAD
+}
+
+// Response 200
+{
+  "assigned": [ /* TeamMember records */ ],
+  "skipped":  [ { "userId": "...", "reason": "already member" } ],
+  "requests": []
+}</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/teams/:teamId/members/bulk</span>
+      <span class="perm-badge">team.write</span>
+    </div>
+    <div class="endpoint-body">
+      <pre>// Request
+{ "userIds": ["uuid", "uuid"], "role": "MEMBER" }
+
+// Response 200 — same shape as single-assign</pre>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method DELETE">DELETE</span>
+      <span class="endpoint-path">/api/teams/:teamId/members/:memberId</span>
+      <span class="perm-badge">team.write</span>
+    </div>
+    <div class="endpoint-body">
+      <p><code>:memberId</code> is the <strong>user ID</strong> (not the TeamMember record ID).</p>
+      <pre>// Response 200
+{ "removed": true }</pre>
+      <p>Response 404: <code>{ "error": "Team member not found" }</code></p>
+    </div>
+  </div>
+
+  <!-- ═══ ALL PERMISSIONS ════════════════════════════════════════════════════ -->
+  <h2 id="all-permissions">All 45 Seeded Permissions</h2>
+  <p>These permissions are created by the super-admin database seed and assigned to the <code>superadmin</code> role.</p>
+
+  <h4>User</h4>
+  <div class="perm-grid">
+    <span class="perm-pill user">user.read</span>
+    <span class="perm-pill user">user.create</span>
+    <span class="perm-pill user">user.write</span>
+    <span class="perm-pill user">user.update</span>
+    <span class="perm-pill user">user.delete</span>
+  </div>
+
+  <h4>Role</h4>
+  <div class="perm-grid">
+    <span class="perm-pill role">role.read</span>
+    <span class="perm-pill role">role.create</span>
+    <span class="perm-pill role">role.write</span>
+    <span class="perm-pill role">role.update</span>
+    <span class="perm-pill role">role.delete</span>
+  </div>
+
+  <h4>Permission</h4>
+  <div class="perm-grid">
+    <span class="perm-pill perm">permission.read</span>
+    <span class="perm-pill perm">permission.assign</span>
+    <span class="perm-pill perm">permission.write</span>
+    <span class="perm-pill perm">permission.delete</span>
+  </div>
+
+  <h4>Team</h4>
+  <div class="perm-grid">
+    <span class="perm-pill team">team.read</span>
+    <span class="perm-pill team">team.create</span>
+    <span class="perm-pill team">team.update</span>
+    <span class="perm-pill team">team.delete</span>
+    <span class="perm-pill team">team.write</span>
+    <span class="perm-pill team">team.assignLead</span>
+    <span class="perm-pill team">team.request</span>
+    <span class="perm-pill team">team.approve</span>
+  </div>
+
+  <h4>System / AuditLog</h4>
+  <div class="perm-grid">
+    <span class="perm-pill system">auditlog.read</span>
+    <span class="perm-pill system">system.config</span>
+    <span class="perm-pill system">admin.view</span>
+  </div>
+
+  <h4>HR — Attendance</h4>
+  <div class="perm-grid">
+    <span class="perm-pill attend">attendance.self</span>
+    <span class="perm-pill attend">attendance.read</span>
+  </div>
+
+  <h4>HR — Location</h4>
+  <div class="perm-grid">
+    <span class="perm-pill location">location.request</span>
+    <span class="perm-pill location">location.read</span>
+    <span class="perm-pill location">location.audit</span>
+  </div>
+
+  <h4>HR — Device</h4>
+  <div class="perm-grid">
+    <span class="perm-pill device">device.register</span>
+    <span class="perm-pill device">device.unregister</span>
+    <span class="perm-pill device">device.read</span>
+  </div>
+
+  <h4>HR — Consent</h4>
+  <div class="perm-grid">
+    <span class="perm-pill consent">consent.write</span>
+    <span class="perm-pill consent">consent.read</span>
+  </div>
+
+  <h4>Lead</h4>
+  <div class="perm-grid">
+    <span class="perm-pill lead">lead.read</span>
+    <span class="perm-pill lead">lead.write</span>
+    <span class="perm-pill lead">lead.assign</span>
+    <span class="perm-pill lead">lead.note</span>
+    <span class="perm-pill lead">lead.followup</span>
+    <span class="perm-pill lead">lead.webhook</span>
+  </div>
+
+  <h4>Inventory</h4>
+  <div class="perm-grid">
+    <span class="perm-pill inventory">inventory.read</span>
+    <span class="perm-pill inventory">inventory.write</span>
+    <span class="perm-pill inventory">inventory.delete</span>
+    <span class="perm-pill inventory">inventory.manage</span>
+  </div>
+
+  <!-- ═══ ERROR CODES ════════════════════════════════════════════════════════ -->
+  <h2 id="error-codes">Error Codes</h2>
+  <table>
+    <thead><tr><th>Status</th><th>Body</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><strong>400</strong></td><td><code>{ "error": {...} }</code></td><td>Bad Request — Zod validation failed or invalid input</td></tr>
+      <tr><td><strong>401</strong></td><td><code>{ "error": "Unauthorized" }</code></td><td>Missing or invalid JWT access token → frontend redirects to /login</td></tr>
+      <tr><td><strong>403</strong></td><td><code>{ "error": "Forbidden" }</code></td><td>Authenticated but missing required permission</td></tr>
+      <tr><td><strong>404</strong></td><td><code>{ "error": "Not found" }</code></td><td>Resource does not exist</td></tr>
+      <tr><td><strong>500</strong></td><td><code>{ "error": "Internal server error" }</code></td><td>Unexpected server failure</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ═══ ALL ENDPOINTS SUMMARY ════════════════════════════════════════════ -->
+  <h2 id="all-endpoints">All Endpoints Summary</h2>
+  <table>
+    <thead>
+      <tr>
+        <th class="summary-num">#</th>
+        <th>Method</th>
+        <th>Path</th>
+        <th>Permission</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="summary-num">1</td><td><span class="method POST">POST</span></td><td><code>/api/auth/login</code></td><td>—</td><td>Login, get access token</td></tr>
+      <tr><td class="summary-num">2</td><td><span class="method GET">GET</span></td><td><code>/api/auth/me</code></td><td>requireAuth</td><td>Get current user + permissions</td></tr>
+      <tr><td class="summary-num">3</td><td><span class="method POST">POST</span></td><td><code>/api/auth/refresh</code></td><td>requireAuth</td><td>Refresh access token</td></tr>
+      <tr><td class="summary-num">4</td><td><span class="method POST">POST</span></td><td><code>/api/auth/logout</code></td><td>requireAuth</td><td>Invalidate refresh token</td></tr>
+      <tr><td class="summary-num">5</td><td><span class="method POST">POST</span></td><td><code>/api/users</code></td><td>user.write</td><td>Create user (with optional team)</td></tr>
+      <tr><td class="summary-num">6</td><td><span class="method GET">GET</span></td><td><code>/api/users</code></td><td>user.read</td><td>List all users (max 100)</td></tr>
+      <tr><td class="summary-num">7</td><td><span class="method GET">GET</span></td><td><code>/api/users/:id</code></td><td>user.read</td><td>Get user by ID</td></tr>
+      <tr><td class="summary-num">8</td><td><span class="method POST">POST</span></td><td><code>/api/rbac/roles</code></td><td>role.write</td><td>Create role</td></tr>
+      <tr><td class="summary-num">9</td><td><span class="method GET">GET</span></td><td><code>/api/rbac/roles</code></td><td>role.read</td><td>List all roles</td></tr>
+      <tr><td class="summary-num">10</td><td><span class="method GET">GET</span></td><td><code>/api/rbac/roles/:id</code></td><td>role.read</td><td>Get role by ID (with permissions)</td></tr>
+      <tr><td class="summary-num">11</td><td><span class="method PUT">PUT</span></td><td><code>/api/rbac/roles/:id</code></td><td>role.write</td><td>Update role name/description</td></tr>
+      <tr><td class="summary-num">12</td><td><span class="method DELETE">DELETE</span></td><td><code>/api/rbac/roles/:id</code></td><td>role.delete</td><td>Delete role</td></tr>
+      <tr><td class="summary-num">13</td><td><span class="method POST">POST</span></td><td><code>/api/rbac/roles/:id/permissions</code></td><td>role.write</td><td>Assign permission to role</td></tr>
+      <tr><td class="summary-num">14</td><td><span class="method DELETE">DELETE</span></td><td><code>/api/rbac/roles/:id/permissions/:permId</code></td><td>role.write</td><td>Remove permission from role</td></tr>
+      <tr><td class="summary-num">15</td><td><span class="method GET">GET</span></td><td><code>/api/rbac/roles/:id/permissions</code></td><td>role.read</td><td>Get permissions of a role</td></tr>
+      <tr><td class="summary-num">16</td><td><span class="method POST">POST</span></td><td><code>/api/rbac/roles/assign-to-user</code></td><td>role.write</td><td>Assign role to user</td></tr>
+      <tr><td class="summary-num">17</td><td><span class="method DELETE">DELETE</span></td><td><code>/api/rbac/roles/user/:userId/role/:roleId</code></td><td>role.write</td><td>Remove role from user</td></tr>
+      <tr><td class="summary-num">18</td><td><span class="method POST">POST</span></td><td><code>/api/rbac/permissions</code></td><td>permission.write</td><td>Create permission</td></tr>
+      <tr><td class="summary-num">19</td><td><span class="method GET">GET</span></td><td><code>/api/rbac/permissions</code></td><td>permission.read</td><td>List all permissions</td></tr>
+      <tr><td class="summary-num">20</td><td><span class="method GET">GET</span></td><td><code>/api/rbac/permissions/:id</code></td><td>permission.read</td><td>Get permission by ID</td></tr>
+      <tr><td class="summary-num">21</td><td><span class="method PUT">PUT</span></td><td><code>/api/rbac/permissions/:id</code></td><td>permission.write</td><td>Update permission</td></tr>
+      <tr><td class="summary-num">22</td><td><span class="method DELETE">DELETE</span></td><td><code>/api/rbac/permissions/:id</code></td><td>permission.delete</td><td>Delete permission</td></tr>
+      <tr><td class="summary-num">23</td><td><span class="method POST">POST</span></td><td><code>/api/teams</code></td><td>team.write</td><td>Create team</td></tr>
+      <tr><td class="summary-num">24</td><td><span class="method GET">GET</span></td><td><code>/api/teams</code></td><td>team.read</td><td>List all teams</td></tr>
+      <tr><td class="summary-num">25</td><td><span class="method GET">GET</span></td><td><code>/api/teams/:id</code></td><td>team.read</td><td>Get team with all members</td></tr>
+      <tr><td class="summary-num">26</td><td><span class="method PATCH">PATCH</span></td><td><code>/api/teams/:id</code></td><td>team.write</td><td>Update team (name / leadId / managerId)</td></tr>
+      <tr><td class="summary-num">27</td><td><span class="method DELETE">DELETE</span></td><td><code>/api/teams/:id</code></td><td>team.write</td><td>Delete team (cascade members)</td></tr>
+      <tr><td class="summary-num">28</td><td><span class="method GET">GET</span></td><td><code>/api/teams/:teamId/members</code></td><td>team.read</td><td>List team members</td></tr>
+      <tr><td class="summary-num">29</td><td><span class="method POST">POST</span></td><td><code>/api/teams/:teamId/members</code></td><td>team.write</td><td>Assign member(s) to team</td></tr>
+      <tr><td class="summary-num">30</td><td><span class="method POST">POST</span></td><td><code>/api/teams/:teamId/members/bulk</code></td><td>team.write</td><td>Bulk assign members</td></tr>
+      <tr><td class="summary-num">31</td><td><span class="method DELETE">DELETE</span></td><td><code>/api/teams/:teamId/members/:userId</code></td><td>team.write</td><td>Remove member from team</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider">
+  <p style="text-align:center;color:var(--muted);font-size:12px;">CRM Pro · Super Admin Reference · Generated Mar 2026</p>
+
+</main>
+</body>
+</html>

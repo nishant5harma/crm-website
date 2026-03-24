@@ -1,0 +1,578 @@
+CRM Backend
+Super Admin API
+Auth
+
+Login
+Get Current User
+Refresh Token
+Logout
+Users
+
+Create User
+List Users
+Get User by ID
+Roles
+
+Create Role
+List Roles
+Get Role by ID
+Update Role
+Delete Role
+Assign Permission to Role
+Remove Permission from Role
+Get Role Permissions
+Assign Role to User
+Remove Role from User
+Permissions
+
+Create Permission
+List Permissions
+Get Permission by ID
+Update Permission
+Delete Permission
+Reference
+
+All Seeded Permissions
+Base URL: /api
+🔐 Super Admin Reference
+CRM Backend API
+Complete endpoint reference for Auth, Users, Roles, and Permissions — scoped to the superadmin role.
+
+Base URL: /api
+Auth: Bearer <token>
+Format: application/json
+🔑
+Auth
+POST
+/api/auth/login
+No auth required
+Request Body
+
+{
+  "email": "superadmin@example.com",
+  "password": "SuperSecurePassword123!"
+}
+email
+string · required · valid email
+password
+string · required
+Response 200
+
+{
+  "accessToken": "eyJhbGciOiJIUzI1...",
+  "user": {
+    "id": "uuid",
+    "name": "Super Admin",
+    "email": "superadmin@example.com",
+    "roles": [{ "name": "superadmin" }]
+  }
+}
+Refresh token is set as an HttpOnly cookie.
+
+GET
+/api/auth/me
+🔒 requireAuth
+Headers
+
+Authorization: Bearer <accessToken>
+No request body needed.
+
+Response 200
+
+{
+  "user": {
+    "id": "uuid",
+    "name": "Super Admin",
+    "email": "superadmin@example.com",
+    "roles": [{ "id": "uuid", "name": "superadmin" }],
+    "permissions": ["user.read", "role.write", ...]
+  }
+}
+POST
+/api/auth/refresh
+🔒 requireAuth
+Request Body (optional)
+
+{
+  "refreshToken": "eyJhbGciOi..."
+}
+Or pass via refreshToken cookie.
+
+Response 200
+
+{
+  "accessToken": "eyJhbGciOiJIUzI1..."
+}
+POST
+/api/auth/logout
+🔒 requireAuth
+Request Body (optional)
+
+{
+  "refreshToken": "eyJhbGciOi..."
+}
+Or pass via refreshToken cookie.
+
+Response 200
+
+{
+  "message": "Logged out successfully"
+}
+👤
+Users
+Permission required: user.write / user.read
+POST
+/api/users
+user.write
+🔒 requireAuth
+Request Body
+
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "password": "SecurePass123!",
+  "roleIds": ["<role-uuid>"],
+  "teamId": "<team-uuid>"
+}
+name
+string · required · min 2
+email
+string · required · valid email
+password
+string · required · min 6
+roleIds
+UUID[] · required · min 1
+teamId
+UUID · optional · adds as MEMBER
+Response 201
+
+{
+  "user": {
+    "id": "uuid",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "roles": [{
+      "id": "uuid",
+      "name": "manager",
+      "description": "..."
+    }],
+    "teamMembers": [{
+      "teamId": "uuid",
+      "teamName": "Sales Team",
+      "role": "MEMBER",
+      "joinedAt": "2026-03-13T..."
+    }]
+  }
+}
+GET
+/api/users
+user.read
+🔒 requireAuth
+Headers
+
+Authorization: Bearer <accessToken>
+No request body. Returns up to 100 users ordered by creation date.
+
+Response 200
+
+{
+  "users": [{
+    "id": "uuid",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "roles": [{ "id": "uuid", "name": "manager" }],
+    "teamMembers": [{
+      "teamId": "uuid",
+      "teamName": "Sales",
+      "role": "MEMBER",
+      "joinedAt": "2026-03-13T..."
+    }]
+  }]
+}
+GET
+/api/users/:id
+user.read
+🔒 requireAuth
+Path Param
+
+:id
+UUID of the user
+Response 200
+
+{
+  "user": {
+    "id": "uuid",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "roles": [{ "id": "uuid", "name": "manager" }],
+    "teamMembers": [...]
+  }
+}
+👑
+Roles
+Base: /api/rbac/roles
+POST
+/api/rbac/roles
+role.write
+Request Body
+
+{
+  "name": "sales_manager",
+  "description": "Manages sales team"
+}
+name
+string · required · min 2
+description
+string · optional
+Response 201
+
+{
+  "id": "uuid",
+  "name": "sales_manager",
+  "description": "Manages sales team",
+  "createdAt": "2026-03-13T..."
+}
+GET
+/api/rbac/roles
+role.read
+No request body. Returns all roles.
+
+Response 200
+
+[
+  {
+    "id": "uuid",
+    "name": "superadmin",
+    "description": "Full access",
+    "createdAt": "2026-03-13T..."
+  }
+]
+GET
+/api/rbac/roles/:id
+role.read
+Path Param
+
+:id
+UUID of the role
+Response 200
+
+{
+  "id": "uuid",
+  "name": "superadmin",
+  "description": "Full access",
+  "createdAt": "2026-03-13T..."
+}
+PUT
+/api/rbac/roles/:id
+role.write
+Request Body (all optional)
+
+{
+  "name": "new_name",
+  "description": "Updated description"
+}
+Response 200
+
+{
+  "id": "uuid",
+  "name": "new_name",
+  "description": "Updated description",
+  "updatedAt": "2026-03-13T..."
+}
+DELETE
+/api/rbac/roles/:id
+role.delete
+Path Param
+
+:id
+UUID of the role to delete
+Response 204
+
+No content returned on success.
+
+POST
+/api/rbac/roles/:id/permissions
+role.write
+Request Body
+
+{
+  "permissionId": "<permission-uuid>"
+}
+Response 201
+
+{
+  "roleId": "uuid",
+  "permissionId": "uuid",
+  "createdAt": "2026-03-13T..."
+}
+DELETE
+/api/rbac/roles/:id/permissions/:permId
+role.write
+Path Params
+
+:id
+Role UUID
+:permId
+Permission UUID to unlink
+Response 200
+
+{
+  "roleId": "uuid",
+  "permissionId": "uuid"
+}
+GET
+/api/rbac/roles/:id/permissions
+role.read
+Path Param
+
+:id
+Role UUID
+Response 200
+
+[
+  {
+    "id": "uuid",
+    "key": "user.read",
+    "description": "View user data",
+    "module": "User"
+  }
+]
+POST
+/api/rbac/roles/assign-to-user
+role.write
+Request Body
+
+{
+  "userId": "<user-uuid>",
+  "roleId": "<role-uuid>"
+}
+Response 201
+
+{
+  "userId": "uuid",
+  "roleId": "uuid",
+  "createdAt": "2026-03-13T..."
+}
+DELETE
+/api/rbac/roles/user/:userId/role/:roleId
+role.write
+Path Params
+
+:userId
+User UUID
+:roleId
+Role UUID to remove
+Response 200
+
+{
+  "userId": "uuid",
+  "roleId": "uuid"
+}
+🔐
+Permissions
+Base: /api/rbac/permissions
+POST
+/api/rbac/permissions
+permission.write
+Request Body
+
+{
+  "key": "report.read",
+  "description": "View reports",
+  "module": "Report"
+}
+key
+string · required · min 3 · unique
+description
+string · optional
+module
+string · optional (e.g. "User", "Team")
+Response 201
+
+{
+  "id": "uuid",
+  "key": "report.read",
+  "description": "View reports",
+  "module": "Report",
+  "createdAt": "2026-03-13T..."
+}
+GET
+/api/rbac/permissions
+permission.read
+No request body. Returns all permissions.
+
+Response 200
+
+[
+  {
+    "id": "uuid",
+    "key": "user.read",
+    "description": "View user data",
+    "module": "User"
+  }
+]
+GET
+/api/rbac/permissions/:id
+permission.read
+Path Param
+
+:id
+UUID of the permission
+Response 200
+
+{
+  "id": "uuid",
+  "key": "user.read",
+  "description": "View user data",
+  "module": "User"
+}
+PUT
+/api/rbac/permissions/:id
+permission.write
+Request Body (all optional)
+
+{
+  "key": "report.export",
+  "description": "Export reports",
+  "module": "Report"
+}
+Response 200
+
+{
+  "id": "uuid",
+  "key": "report.export",
+  "description": "Export reports",
+  "module": "Report",
+  "updatedAt": "2026-03-13T..."
+}
+DELETE
+/api/rbac/permissions/:id
+permission.delete
+Path Param
+
+:id
+UUID of the permission to delete
+Response 204
+
+No content returned on success.
+
+📋
+All Seeded Permissions
+These 45 permissions are created by the super-admin seed and assigned to the superadmin role.
+
+User
+user.read
+View user data
+user.create
+Create users
+user.write
+Write users
+user.update
+Update user data
+user.delete
+Delete users
+Role
+role.read
+View roles
+role.create
+Create roles
+role.write
+Write roles
+role.update
+Update roles
+role.delete
+Delete roles
+Permission
+permission.read
+View permissions
+permission.assign
+Assign permissions to roles
+permission.write
+Write permissions
+permission.delete
+Delete permissions
+Team
+team.read
+View teams
+team.create
+Create teams
+team.update
+Update teams
+team.delete
+Delete teams
+team.write
+Write teams (approve assignments/removals)
+team.assignLead
+Assign team lead
+team.request
+Create team membership requests
+team.approve
+Approve team requests
+System / AuditLog
+auditlog.read
+View audit logs
+system.config
+Access system configuration
+admin.view
+Access to the Admin Dashboard
+HR — Attendance · Location · Device · Consent
+attendance.self
+Perform own attendance check-in
+attendance.read
+Read attendance records
+location.request
+Create on-demand location requests
+location.read
+Read location request results
+location.audit
+View location access audit records
+device.register
+Register/update a device (push token)
+device.unregister
+Unregister device / remove push token
+device.read
+List devices for a user
+consent.write
+Create or revoke consent entries
+consent.read
+Read consents for a user
+Lead
+lead.read
+Read leads
+lead.write
+Create/update leads
+lead.assign
+Assign leads
+lead.note
+Add notes to leads
+lead.followup
+Manage lead follow-ups
+lead.webhook
+View raw webhook events
+Inventory
+inventory.read
+Read inventory data
+inventory.write
+Create/update inventory
+inventory.delete
+Delete inventory entities
+inventory.manage
+Manage advanced inventory states (BLOCK, SOLD, BOOKING…)
+⚠️
+Common Error Responses
+400
+Bad Request — Validation failed (ZodError) or invalid input
+{ "error": {...} }
+401
+Unauthorized — Missing or invalid JWT access token
+{ "error": "Unauthorized" }
+403
+Forbidden — Authenticated but missing required permission
+{ "error": "Forbidden" }
+404
+Not Found — Resource does not exist
+{ "error": "Not found" }
+500
+Internal Server Error — Unexpected server failure
+{ "error": "Internal server error" }
+↑
