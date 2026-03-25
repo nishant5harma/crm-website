@@ -11,6 +11,7 @@ import InventoryPage from './pages/InventoryPage'
 import LeadsPage from './pages/LeadsPage'
 import ColdCallPage from './pages/ColdCallPage'
 import AttendancePage from './pages/AttendancePage'
+import HrPage from './pages/HrPage'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="leads" element={<LeadsPage />} />
             <Route path="cold-calls" element={<ColdCallPage />} />
             <Route path="attendance" element={<AttendancePage />} />
+            <Route path="hr" element={<HrPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/login" replace />} />

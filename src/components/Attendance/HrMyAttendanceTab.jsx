@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { getAttendance, checkIn, checkOut } from '../../api/attendanceApi'
 import { useAuth } from '../../context/AuthContext'
 
-export default function MyAttendanceTab() {
+export default function HrMyAttendanceTab() {
   const { user } = useAuth()
   const [todayRecord, setTodayRecord] = useState(null)
   const [history, setHistory] = useState([])
@@ -108,6 +108,14 @@ export default function MyAttendanceTab() {
     return new Date(isoString).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toLowerCase()
   }
 
+  const formatDate = (isoString) => {
+    if (!isoString) return ''
+    const d = new Date(isoString)
+    const day = d.getDate().toString().padStart(2, '0')
+    const month = d.toLocaleString('en-US', { month: 'short' })
+    const year = d.getFullYear().toString().slice(-2)
+    return `${day} ${month} ${year}`
+  }
 
   const getDuration = (start, end) => {
     if (!start) return '0h 0m'
@@ -120,7 +128,7 @@ export default function MyAttendanceTab() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div className="text-gray-500 font-semibold text-xs tracking-wider">
         {todayStr}
       </div>
@@ -132,19 +140,21 @@ export default function MyAttendanceTab() {
       )}
 
       {/* Main Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative flex flex-col">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="font-bold text-gray-900 text-[16px]">Today's status</h3>
+          <button 
+            onClick={fetchAttendance} disabled={loading}
+            className="px-4 py-1.5 border border-gray-200 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-50 transition cursor-pointer"
+          >
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
+
         {loading && !todayRecord ? (
           <div className="py-8 text-center text-gray-400 text-sm">Loading today's status...</div>
         ) : !todayRecord ? (
           <div className="text-center py-4">
-            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="13" r="8" />
-                <path d="M12 9v4l2 2" />
-                <path d="M5 3L2 6" />
-                <path d="M22 6l-3-3" />
-              </svg>
-            </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Not checked in</h2>
             <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
               Tap below to mark your attendance for today. Your GPS location will be captured automatically.
@@ -158,49 +168,30 @@ export default function MyAttendanceTab() {
             </button>
           </div>
         ) : (
-          <>
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-[#059669] rounded-t-2xl"></div>
-            <div className="flex justify-between items-start mb-6 pt-2">
-              <div>
-                <h3 className="text-gray-500 font-medium text-sm mb-1">Today</h3>
-                <div className="text-3xl font-extrabold text-[#0f172a] tracking-tight">{formatTime(todayRecord.checkinAt)}</div>
-                <div className="text-gray-400 text-sm mt-0.5">Check-in</div>
-              </div>
-              <span className="bg-green-50 text-[#059669] text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide">
+          <div className="space-y-4">
+            <div>
+              <span className="bg-green-50 text-[#059669] text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide inline-block mb-2">
                 {todayRecord.status || 'ACCEPTED'}
               </span>
             </div>
 
-            <div className="relative pl-7 space-y-7 mt-2 before:absolute before:top-2 before:bottom-2 before:left-[11px] before:w-0.5 before:bg-gray-200">
-              {/* Check In Node */}
-              <div className="relative">
-                <div className="absolute -left-[33px] top-1.5 w-3.5 h-3.5 bg-[#059669] rounded-full border-[2.5px] border-white z-10"></div>
-                <h4 className="font-bold text-[#0f172a] text-[15px]">Checked in at {formatTime(todayRecord.checkinAt)}</h4>
-                <div className="text-[13px] text-gray-500 mt-1.5 flex items-center gap-1">
-                  <span className="text-red-500 mr-0.5">📍</span>
-                  {(todayRecord.location?.latitude || 0).toFixed(5)}, {(todayRecord.location?.longitude || 0).toFixed(5)} ±{todayRecord.location?.accuracy || 0}m
-                </div>
-                <div className="text-[13px] text-gray-400 italic mt-1">"{todayRecord.note || 'Checked in via Web'}"</div>
+            <div className="space-y-1.5">
+              <div className="text-[15px] font-bold text-gray-900">
+                Check-in: {formatDate(todayRecord.checkinAt)}, {formatTime(todayRecord.checkinAt)}
               </div>
-
-              {/* Check Out Node */}
-              <div className="relative">
-                <div className="absolute -left-[33px] top-1.5 w-3.5 h-3.5 bg-[#0f172a] rounded-full border-[2.5px] border-white z-10"></div>
-                <h4 className="font-bold text-[#0f172a] text-[15px]">
-                  {todayRecord.checkoutAt ? `Checked out at ${formatTime(todayRecord.checkoutAt)}` : 'Not checked out yet'}
-                </h4>
-                <div className="text-[13px] text-gray-400 mt-1 flex items-center gap-1">
-                  Work duration: {getDuration(todayRecord.checkinAt, todayRecord.checkoutAt)}
-                </div>
+              <div className="text-[15px] text-gray-500">
+                Check-out: {todayRecord.checkoutAt ? `${formatDate(todayRecord.checkoutAt)}, ${formatTime(todayRecord.checkoutAt)}` : 'Not checked out yet'}
+              </div>
+              <div className="text-[15px] text-gray-400">
+                Location: {(todayRecord.location?.latitude || 0).toFixed(5)}, {(todayRecord.location?.longitude || 0).toFixed(5)}
+              </div>
+              <div className="text-[15px] text-gray-400">
+                Note: {todayRecord.note || 'Checked in via Web'}
               </div>
             </div>
 
-            <div className="mt-8">
-              {todayRecord.checkoutAt ? (
-                <div className="w-full bg-gray-50 text-gray-500 font-semibold text-sm py-4 rounded-xl text-center">
-                  Attendance complete for today ✓
-                </div>
-              ) : (
+            {!todayRecord.checkoutAt && (
+              <div className="pt-4">
                 <button
                   onClick={handleCheckOut}
                   disabled={actionLoading}
@@ -208,23 +199,11 @@ export default function MyAttendanceTab() {
                 >
                   {actionLoading ? 'Checking Out...' : 'Check Out Due'}
                 </button>
-              )}
-            </div>
-          </>
+              </div>
+            )}
+          </div>
         )}
       </div>
-
-      <button
-        onClick={fetchAttendance}
-        disabled={loading}
-        className="w-full bg-white border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="23 4 23 10 17 10" />
-          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-        </svg>
-        <span>Refresh</span>
-      </button>
 
       <div className="pt-4">
         <h3 className="text-xs font-semibold text-gray-500 tracking-wider mb-4">LAST 30 DAYS</h3>
