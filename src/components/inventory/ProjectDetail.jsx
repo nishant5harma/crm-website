@@ -764,6 +764,290 @@ function ListingsSection({ projectId }) {
 }
 
 /* ═══════════════════════════════════════
+   RESERVATIONS SECTION
+═══════════════════════════════════════ */
+const RES_STATUSES = ['ACTIVE', 'EXPIRED', 'CONFIRMED', 'CANCELLED']
+const RES_STATUS_STYLE = {
+  ACTIVE:    'bg-green-50 text-green-700 border border-green-200',
+  EXPIRED:   'bg-gray-100 text-gray-500 border border-gray-200',
+  CONFIRMED: 'bg-blue-50 text-blue-700 border border-blue-200',
+  CANCELLED: 'bg-red-50 text-red-600 border border-red-200',
+}
+
+function fmtDt(dt) {
+  if (!dt) return '—'
+  return new Date(dt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+function timeLeft(expiresAt) {
+  if (!expiresAt) return null
+  const diff = new Date(expiresAt) - new Date()
+  if (diff <= 0) return 'Expired'
+  const mins = Math.floor(diff / 60000)
+  if (mins < 60) return `${mins}m left`
+  return `${Math.floor(mins / 60)}h ${mins % 60}m left`
+}
+
+function ReservationsSection({ projectId }) {
+  const [reservations, setReservations] = useState([])
+  const [projectUnitIds, setProjectUnitIds] = useState([])
+  const [projectListingIds, setProjectListingIds] = useState([])
+  const [units, setUnits] = useState([])
+  const [listings, setListings] = useState([])
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [filterStatus, setFilterStatus] = useState('')
+  const [search, setSearch] = useState('')
+  const [modal, setModal] = useState(false)
+  const [form, setForm] = useState({ linkType: 'unit', unitId: '', listingId: '', userId: '', note: '', expiresAt: '' })
+  const [formLoading, setFormLoading] = useState(false)
+  const [formError, setFormError] = useState('')
+  const [cancelConfirm, setCancelConfirm] = useState({ open: false, item: null })
+  const [cancelLoading, setCancelLoading] = useState(false)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [resRes, unitsRes, listingsRes, usersRes] = await Promise.all([
+        api.get('/inventory/reservations'),
+        api.get('/inventory/units', { params: { projectId, limit: 500 } }),
+        api.get('/inventory/listings', { params: { projectId, limit: 500 } }),
+        api.get('/users'),
+      ])
+      const projectUnits = unitsRes.data?.items ?? []
+      const projectListings = listingsRes.data?.items ?? []
+      setUnits(projectUnits)
+      setListings(projectListings)
+      setProjectUnitIds(projectUnits.map(u => u.id))
+      setProjectListingIds(projectListings.map(l => l.id))
+      const ud = usersRes.data
+      setUsers(Array.isArray(ud) ? ud : (ud?.users ?? []))
+
+      const allRes = resRes.data?.items ?? []
+      const unitIds = new Set(projectUnits.map(u => u.id))
+      const listingIds = new Set(projectListings.map(l => l.id))
+      const filtered = allRes.filter(r =>
+        (r.unitId && unitIds.has(r.unitId)) || (r.listingId && listingIds.has(r.listingId))
+      )
+      setReservations(filtered)
+    } catch { setReservations([]) }
+    finally { setLoading(false) }
+  }, [projectId])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  const fc = (e) => { setFormError(''); setForm(p => ({ ...p, [e.target.name]: e.target.value })) }
+
+  const openModal = () => { setForm({ linkType: 'unit', unitId: '', listingId: '', userId: '', note: '', expiresAt: '' }); setFormError(''); setModal(true) }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (form.linkType === 'unit' && !form.unitId) { setFormError('Please select a unit.'); return }
+    if (form.linkType === 'listing' && !form.listingId) { setFormError('Please select a listing.'); return }
+    setFormLoading(true); setFormError('')
+    try {
+      const payload = {
+        unitId: form.linkType === 'unit' ? form.unitId : null,
+        listingId: form.linkType === 'listing' ? form.listingId : null,
+        userId: form.userId || undefined,
+        note: form.note.trim() || undefined,
+        expiresAt: form.expiresAt || undefined,
+      }
+      const { data } = await api.post('/inventory/reservations', payload)
+      setReservations(p => [data.data, ...p])
+      setModal(false)
+    } catch (err) {
+      const d = err.response?.data
+      setFormError(d?.message || d?.error || 'Failed to create reservation.')
+    } finally { setFormLoading(false) }
+  }
+
+  const handleCancel = async () => {
+    setCancelLoading(true)
+    try {
+      const { data } = await api.post(`/inventory/reservations/${cancelConfirm.item.id}/cancel`)
+      setReservations(p => p.map(x => x.id === cancelConfirm.item.id ? data.data : x))
+      setCancelConfirm({ open: false, item: null })
+    } catch (err) {
+      alert(err.response?.data?.message || err.response?.data?.error || 'Failed to cancel reservation.')
+    } finally { setCancelLoading(false) }
+  }
+
+  const unitLabel = (id) => {
+    const u = units.find(x => x.id === id)
+    return u ? `Unit ${u.unitNumber || id}` : (id ? id.slice(0, 10) + '…' : '—')
+  }
+  const listingLabel = (id) => {
+    const l = listings.find(x => x.id === id)
+    return l ? l.title : (id ? id.slice(0, 12) + '…' : '—')
+  }
+  const userLabel = (id) => {
+    const u = users.find(x => x.id === id)
+    return u ? u.name : (id ? id.slice(0, 10) + '…' : '—')
+  }
+
+  const filtered = reservations.filter(r => {
+    if (filterStatus && r.status !== filterStatus) return false
+    if (search) {
+      const q = search.toLowerCase()
+      const uName = r.unitId ? unitLabel(r.unitId) : ''
+      const lName = r.listingId ? listingLabel(r.listingId) : ''
+      const userName = r.userId ? userLabel(r.userId) : ''
+      if (![uName, lName, userName, r.note || ''].some(v => v.toLowerCase().includes(q))) return false
+    }
+    return true
+  })
+
+  const availableUnits = units.filter(u => u.status === 'AVAILABLE')
+  const availableListings = listings.filter(l => l.status === 'AVAILABLE')
+
+  return (
+    <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-50">
+        <SectionHeader
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>}
+          title="Reservations" count={reservations.length}
+          accentColor="bg-gradient-to-br from-rose-500 to-pink-600 text-white"
+          filterSlot={
+            <>
+              <FilterSelect value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                <option value="">All Statuses</option>
+                {RES_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+              </FilterSelect>
+            </>
+          }
+          onAdd={openModal} addLabel="+ Reserve"
+        />
+      </div>
+
+      {/* Search */}
+      <div className="px-6 pt-4">
+        <div className="relative max-w-sm">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="text" placeholder="Search reservations..." value={search} onChange={e => setSearch(e.target.value)}
+            className="w-full h-9 pl-9 pr-3 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/10 transition" />
+        </div>
+      </div>
+
+      <div className="px-6 pb-5 pt-3">
+        {loading ? <Spinner color="rose" /> : filtered.length === 0 ? (
+          <EmptyState message="No reservations yet" cta="Create a reservation" onCta={openModal} />
+        ) : (
+          <div className="space-y-2.5 mt-2">
+            {filtered.map(r => {
+              const tl = r.status === 'ACTIVE' ? timeLeft(r.expiresAt) : null
+              return (
+                <div key={r.id} className="group flex items-center gap-4 p-3.5 bg-gray-50/60 rounded-xl border border-gray-100 hover:border-rose-200 hover:shadow-sm transition-all">
+                  <div className="flex-1 min-w-0 grid grid-cols-1 lg:grid-cols-[1.5fr_1.5fr_1fr_100px_80px] gap-2 items-center">
+                    {/* Unit / Listing */}
+                    <div className="min-w-0">
+                      {r.unitId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-600">Unit</span>
+                          <span className="text-sm font-medium text-gray-800 truncate">{unitLabel(r.unitId)}</span>
+                        </div>
+                      ) : r.listingId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-teal-50 text-teal-600">Listing</span>
+                          <span className="text-sm font-medium text-gray-800 truncate">{listingLabel(r.listingId)}</span>
+                        </div>
+                      ) : <span className="text-sm text-gray-400">—</span>}
+                      {r.note && <p className="text-xs text-gray-400 mt-0.5 truncate">{r.note}</p>}
+                    </div>
+                    {/* Assigned to */}
+                    <p className="hidden lg:block text-xs text-gray-500 truncate">{r.userId ? userLabel(r.userId) : <span className="text-gray-300">—</span>}</p>
+                    {/* Reserved at */}
+                    <p className="hidden lg:block text-xs text-gray-500">{fmtDt(r.reservedAt)}</p>
+                    {/* Expires */}
+                    <div className="hidden lg:block">
+                      <p className="text-xs text-gray-500">{fmtDt(r.expiresAt)}</p>
+                      {tl && <p className={`text-xs font-medium mt-0.5 ${tl === 'Expired' ? 'text-red-500' : 'text-amber-600'}`}>{tl}</p>}
+                    </div>
+                    {/* Status */}
+                    <Badge label={r.status} style={RES_STATUS_STYLE[r.status] || 'bg-gray-100 text-gray-500'} />
+                  </div>
+                  {/* Cancel button */}
+                  {r.status === 'ACTIVE' && (
+                    <button onClick={() => setCancelConfirm({ open: true, item: r })} title="Cancel reservation" className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition cursor-pointer opacity-0 group-hover:opacity-100">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Create Reservation Modal */}
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-gradient-to-r from-rose-500 to-pink-600 px-5 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-white">New Reservation</h3>
+                <p className="text-xs text-rose-100 mt-0.5">Hold a unit or listing · Default TTL: 15 min</p>
+              </div>
+              <button onClick={() => setModal(false)} className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition cursor-pointer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              {formError && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">{formError}</div>}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Reserve a <span className="text-red-400">*</span></label>
+                <div className="flex rounded-xl border border-gray-200 p-1 gap-1">
+                  {['unit', 'listing'].map(t => (
+                    <button key={t} type="button" onClick={() => setForm(p => ({ ...p, linkType: t, unitId: '', listingId: '' }))}
+                      className={`flex-1 h-8 text-sm font-medium rounded-lg transition cursor-pointer capitalize ${form.linkType === t ? 'bg-rose-500 text-white' : 'text-gray-500 hover:text-gray-800'}`}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {form.linkType === 'unit' ? (
+                <SectionSelect label="Unit *" name="unitId" value={form.unitId} onChange={fc}>
+                  <option value="">Select an available unit</option>
+                  {availableUnits.map(u => <option key={u.id} value={u.id}>Unit {u.unitNumber || u.id}</option>)}
+                </SectionSelect>
+              ) : (
+                <SectionSelect label="Listing *" name="listingId" value={form.listingId} onChange={fc}>
+                  <option value="">Select an available listing</option>
+                  {availableListings.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
+                </SectionSelect>
+              )}
+              <SectionSelect label="Assign To (optional)" name="userId" value={form.userId} onChange={fc}>
+                <option value="">— No assignment —</option>
+                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </SectionSelect>
+              <SmField label="Expires At (optional)" name="expiresAt" value={form.expiresAt} onChange={fc} type="datetime-local" placeholder="" />
+              <SmField label="Note (optional)" name="note" value={form.note} onChange={fc} placeholder="e.g. Hold for client walkthrough" />
+              <div className="flex gap-2 pt-1">
+                <button type="button" onClick={() => setModal(false)} disabled={formLoading}
+                  className="flex-1 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition cursor-pointer">Cancel</button>
+                <button type="submit" disabled={formLoading}
+                  className="flex-1 h-10 bg-gradient-to-r from-rose-500 to-pink-600 hover:opacity-90 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-60 cursor-pointer">
+                  {formLoading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Create Reservation'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Confirm */}
+      <DeleteConfirm open={cancelConfirm.open} onClose={() => setCancelConfirm({ open: false, item: null })} label="this reservation" onConfirm={handleCancel} />
+    </section>
+  )
+}
+
+/* ═══════════════════════════════════════
    PROJECT DETAIL — main export
 ═══════════════════════════════════════ */
 export default function ProjectDetail({ project, onBack, onEdit, onDelete }) {
@@ -848,6 +1132,7 @@ export default function ProjectDetail({ project, onBack, onEdit, onDelete }) {
         <TowersSection projectId={project.id} />
         <UnitsSection projectId={project.id} />
         <ListingsSection projectId={project.id} />
+        <ReservationsSection projectId={project.id} />
       </div>
     </div>
   )

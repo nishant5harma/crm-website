@@ -120,6 +120,14 @@ export default function Sidebar({ collapsed, onToggle }) {
     navigate('/login')
   }
 
+  const roleName = user?.roles?.[0]?.name
+  const navItemsToRender = navItems.filter((item) => {
+    if (roleName === 'Sales') {
+      return ['Dashboard', 'Inventory', 'Leads', 'Cold Calls'].includes(item.label)
+    }
+    return true
+  })
+
   return (
     <aside
       className={`flex flex-col h-full bg-white border-r border-gray-100 transition-all duration-300 ${
@@ -176,7 +184,7 @@ export default function Sidebar({ collapsed, onToggle }) {
             Main Menu
           </p>
         )}
-        {navItems.map((item) => (
+        {navItemsToRender.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
