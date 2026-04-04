@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import DashboardLayout from './layouts/DashboardLayout'
 import LoginPage from './pages/LoginPage'
@@ -12,6 +12,7 @@ import LeadsPage from './pages/LeadsPage'
 import ColdCallPage from './pages/ColdCallPage'
 import AttendancePage from './pages/AttendancePage'
 import HrPage from './pages/HrPage'
+import ActivityPage from './pages/ActivityPage'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -25,7 +26,7 @@ function PublicRoute({ children }) {
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
@@ -59,11 +60,12 @@ export default function App() {
             <Route path="cold-calls" element={<ColdCallPage />} />
             <Route path="attendance" element={<AttendancePage />} />
             <Route path="hr" element={<HrPage />} />
+            <Route path="activity" element={<ActivityPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthProvider>
-    </HashRouter>
+    </BrowserRouter>
   )
 }
