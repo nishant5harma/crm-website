@@ -136,7 +136,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   const roleName = user?.roles?.[0]?.name
   const navItemsToRender = navItems.filter((item) => {
     if (roleName === 'Sales') {
-      return ['Dashboard', 'Inventory', 'Leads', 'Cold Calls'].includes(item.label)
+      return ['Dashboard', 'Inventory', 'Leads', 'Cold Calls', 'Attendance'].includes(item.label)
     }
     return true
   })

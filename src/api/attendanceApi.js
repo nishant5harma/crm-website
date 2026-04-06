@@ -7,8 +7,8 @@ export const checkIn = async (data = {}) => {
 }
 
 // Check out (employee)
-export const checkOut = async () => {
-  const response = await api.post('/hr/attendance/checkout')
+export const checkOut = async (data = {}) => {
+  const response = await api.post('/hr/attendance/checkout', data)
   return response.data
 }
 

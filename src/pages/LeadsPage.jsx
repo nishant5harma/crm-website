@@ -438,6 +438,29 @@ function SourceMappingTab() {
           <button onClick={handleSaveMapping} disabled={saving} className="w-full p-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition">Save mapping</button>
         </div>
       </div>
+
+      {unmappedSources.length > 0 && (
+        <div className="p-6 rounded-2xl border border-gray-100 bg-gray-50/30">
+          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Unmapped Sources detected</h4>
+          <div className="flex flex-wrap gap-2">
+            {unmappedSources.map(s => <span key={s} className="px-3 py-1 bg-white border border-gray-200 rounded-lg text-xs text-gray-600">{s}</span>)}
+          </div>
+        </div>
+      )}
+
+      <div className="p-6">
+        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Active Mappings</h4>
+        <div className="space-y-2">
+          {activeMappings.map(m => (
+            <div key={m.id} className="flex justify-between p-3 bg-white border border-gray-100 rounded-xl shadow-sm text-sm">
+              <span className="font-bold text-gray-700">{m.source}</span>
+              <span className="text-gray-400">&rarr;</span>
+              <span className="text-emerald-600 font-bold">{m.team?.name || m.teamId}</span>
+            </div>
+          ))}
+          {activeMappings.length === 0 && <p className="text-sm text-gray-400 italic">No active mappings found.</p>}
+        </div>
+      </div>
     </div>
   )
 }

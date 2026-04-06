@@ -5,8 +5,13 @@ import TeamViewTab from '../components/Attendance/TeamViewTab'
 
 export default function AttendancePage() {
   const { user } = useAuth()
-  
   const [activeTab, setActiveTab] = useState('my_attendance')
+
+  if (!user) return (
+    <div className="flex items-center justify-center h-full">
+      <div className="w-8 h-8 border-4 border-[#059669] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  )
 
   return (
     <div className="flex flex-col h-full bg-white">
