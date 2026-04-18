@@ -6,9 +6,7 @@ import api from './axios'
 
 export const uploadColdCallBatch = async (formData) => {
   // formData expects: file, mode, dedupePolicy, teamIds, routingConfig
-  const response = await api.post('/coldcall/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  const response = await api.post('/coldcall/upload', formData)
   return response.data
 }
 
@@ -20,6 +18,13 @@ export const previewBatch = async (id) => {
 export const distributeBatch = async (id, params) => {
   // params: dryRun (boolean), force (boolean)
   const response = await api.post(`/coldcall/batches/${id}/distribute`, null, { params })
+  return response.data
+}
+
+// Derived from entries report since no dedicated list endpoint exists
+export const listBatches = async () => {
+  // Use a higher limit to see more history
+  const response = await api.get('/coldcall/report/entries', { params: { limit: 500 } })
   return response.data
 }
 

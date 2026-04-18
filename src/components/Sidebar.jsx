@@ -125,6 +125,7 @@ const navItems = [
 ]
 
 export default function Sidebar({ collapsed, onToggle }) {
+  console.log('Sidebar: Rendering...');
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
